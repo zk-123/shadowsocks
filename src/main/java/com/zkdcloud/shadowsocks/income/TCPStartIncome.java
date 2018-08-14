@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.income;
 
 import com.zkdcloud.shadowsocks.chananelHandler.inbound.CryptoInitInHandler;
-import com.zkdcloud.shadowsocks.chananelHandler.inbound.DecodeCrypherInHandler;
+import com.zkdcloud.shadowsocks.chananelHandler.inbound.DecodeCipherStreamInHandler;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
@@ -25,7 +25,7 @@ public class TCPStartIncome extends AbstractIncome{
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<Channel>() {
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast(new CryptoInitInHandler()).addLast(new DecodeCrypherInHandler());
+                        ch.pipeline().addLast(new CryptoInitInHandler()).addLast(new DecodeCipherStreamInHandler());
                     }
                 }).bind(8989).sync();
         channelFuture.channel().closeFuture().sync();
