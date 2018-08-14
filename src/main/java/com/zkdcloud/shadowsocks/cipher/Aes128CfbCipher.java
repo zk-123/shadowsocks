@@ -42,6 +42,17 @@ public class Aes128CfbCipher extends AbstractCipher{
         return target;
     }
 
+    public byte[] encodeBytes(byte[] originBytes){
+        byte[] target = new byte[originBytes.length];
+        CipherParameters viParameter = new ParametersWithIV(new KeyParameter(key),getRandomBytes(getVILength()));
+
+        CFBBlockCipher streamCipher = new CFBBlockCipher(new AESEngine(),getKeyLength() * 8);
+        streamCipher.init(true,viParameter);
+
+        streamCipher.processBytes(originBytes,0,originBytes.length,target,0);
+        return target;
+    }
+
     @Override
     public int getVILength() {
         return 16;

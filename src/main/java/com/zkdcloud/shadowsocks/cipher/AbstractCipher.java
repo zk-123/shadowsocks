@@ -2,6 +2,8 @@ package com.zkdcloud.shadowsocks.cipher;
 
 import org.bouncycastle.crypto.StreamCipher;
 
+import java.security.SecureRandom;
+
 /**
  * 解密/加密工具
  *
@@ -34,6 +36,13 @@ public abstract class AbstractCipher {
     public abstract byte[] decodeBytes(byte[] secretBytes);
 
     /**
+     * 加密
+     *
+     * @param originBytes 明文
+     * @return 密文
+     */
+    public abstract byte[] encodeBytes(byte[] originBytes);
+    /**
      * 获取向量长度
      *
      * @return 向量长度
@@ -46,4 +55,16 @@ public abstract class AbstractCipher {
      * @return 密钥长度
      */
     public abstract int getKeyLength();
+
+    /**
+     * 生成随机数 byte
+     *
+     * @param size 位数
+     * @return random of bytes
+     */
+    protected byte[] getRandomBytes(int size){
+        byte[] bytes = new byte[size];
+        new SecureRandom().nextBytes(bytes);
+        return bytes;
+    }
 }
