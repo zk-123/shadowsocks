@@ -19,7 +19,11 @@ public class EncodeCipherStreamOutHandler extends MessageToMessageEncoder<ByteBu
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         AbstractCipher cipher = ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).get();
-        byte[] resultData = cipher.encodeBytes(msg.array());
+
+        byte[] realData = new byte[msg.readableBytes()];
+        msg.getBytes(0,realData);
+
+        byte[] resultData = cipher.encodeBytes(realData);
         out.add(Unpooled.buffer().writeBytes(resultData));
     }
 }

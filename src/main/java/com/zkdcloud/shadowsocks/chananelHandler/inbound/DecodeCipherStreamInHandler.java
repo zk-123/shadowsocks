@@ -21,12 +21,19 @@ import static com.zkdcloud.shadowsocks.context.ContextConstant.REMOTE_INET_SOCKE
 public class DecodeCipherStreamInHandler extends MessageToMessageDecoder<ByteBuf> {
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         Aes128CfbCipher cipher = ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).get();
-        byte[] realBytes = cipher.decodeBytes(msg.array());
+        byte[] realBytes = cipher.decodeBytes(msg);
 
-        ByteBuf realMsg = ctx.alloc().heapBuffer().writeBytes(realBytes);
+        msg.clear().writeBytes(realBytes);
         // get Ip
-        InetSocketAddress inetSocketAddress = ShadowsocksUtils.getIp(realMsg);
-        ctx.channel().attr(REMOTE_INET_SOCKET_ADDRESS).set(inetSocketAddress);
-        out.add(realMsg.retain());
+        if(ctx.channel().attr(REMOTE_INET_SOCKET_ADDRESS).get() == null){
+            InetSocketAddress inetSocketAddress = ShadowsocksUtils.getIp(msg);
+            if(inetSocketAddress == null || !inetSocketAddress.getHostName().contains("jianshu.com")){
+                ctx.channel().close();
+                return;
+            }
+
+            ctx.channel().attr(REMOTE_INET_SOCKET_ADDRESS).set(inetSocketAddress);
+        }
+        out.add(msg.retain());
     }
 }

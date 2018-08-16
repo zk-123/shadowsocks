@@ -7,12 +7,14 @@ import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.ListIterator;
 
 /**
  * description
@@ -33,15 +35,14 @@ public class ProxyInHandler extends MessageToMessageDecoder<ByteBuf> {
     /**
      * channelFuture
      */
-    private ChannelFuture channelFuture;
+    private ChannelFuture remoteChannelFuture;
 
-    private List<ByteBuf> clientBuffs = new ArrayList<>();
+    List<ByteBuf> byteBufList = new ArrayList<>();
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         InetSocketAddress remoteAddress = ctx.channel().attr(ContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
-        System.out.println("url: " + remoteAddress.getHostName() + ":" + remoteAddress.getPort());
-        proxyMsg(remoteAddress,msg,ctx.channel());
+        proxyMsg(remoteAddress, msg, ctx.channel());
     }
 
     private void proxyMsg(InetSocketAddress remoteAddress, ByteBuf msg, final Channel clientChannel) throws InterruptedException {
@@ -57,8 +58,8 @@ public class ProxyInHandler extends MessageToMessageDecoder<ByteBuf> {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
                             ch.pipeline()
+                                    .addLast(new IdleStateHandler(0,0,3))
                                     .addLast("query", new SimpleChannelInboundHandler<ByteBuf>() {
-
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                                             clientChannel.writeAndFlush(msg);
@@ -66,29 +67,37 @@ public class ProxyInHandler extends MessageToMessageDecoder<ByteBuf> {
 
                                         @Override
                                         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                            clientChannel.close();
+                                            remoteChannelFuture.channel().close();
+                                            remoteChannelFuture = null;
                                         }
 
                                         @Override
                                         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                                            logger.error("channelId:{}, cause:{}",ctx.channel().id(),cause.getMessage());
+                                            logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
                                         }
                                     });
                         }
                     });
         }
 
-        if (channelFuture == null) {
-            channelFuture = bootstrap.connect(remoteAddress).addListener((ChannelFutureListener)(future) -> {
-                if (future.isSuccess()) {
-                    future.channel().writeAndFlush(msg);
-                } else {
-                    future.cause().printStackTrace();
+        remoteChannelFuture = bootstrap.connect(remoteAddress).addListener((ChannelFutureListener)(future)->{
+            if(future.isSuccess()){
+                for (ByteBuf byteBuf : byteBufList) {
+                    future.channel().writeAndFlush(byteBuf);
                 }
-            });
-        } else {
-            channelFuture.channel().writeAndFlush(msg);
+                byteBufList.clear();
+            }
+        });
+
+        if(remoteChannelFuture == null){
+
         }
+        remoteChannelFuture.channel().writeAndFlush(msg.retain());
     }
 
+    @Override
+    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+        remoteChannelFuture.channel().close();
+        remoteChannelFuture = null;
+    }
 }

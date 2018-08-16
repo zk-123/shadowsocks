@@ -1,3 +1,4 @@
+import com.zkdcloud.shadowsocks.cipher.Aes128CfbCipher;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -28,5 +29,33 @@ public class proxyTest {
             }
         });
         embeddedChannel.writeInbound(Unpooled.wrappedBuffer(originRight));
+    }
+
+    @Test
+    public void testEnDe(){
+        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456");
+        byte[] orign = new byte[]{1,2,3,4,5,6,7,8,9};
+        System.out.println("origin : ");
+        print(orign);
+        byte[] secret1 = aes128CfbCipher.encodeBytes(orign);
+        System.out.println("secret : ");
+        print(secret1);
+        byte[] secret2 = aes128CfbCipher.encodeBytes(orign);
+        System.out.println("secret2 : ");
+        print(secret2);
+
+        byte[] afterDecBytes = aes128CfbCipher.decodeBytes(Unpooled.wrappedBuffer(secret1));
+        System.out.println("after : ");
+        print(afterDecBytes);
+        byte[] afterDecBytes2 = aes128CfbCipher.decodeBytes(Unpooled.wrappedBuffer(secret2));
+        System.out.println("after2 : ");
+        print(afterDecBytes2);
+    }
+
+    public void print(byte[] bytes){
+        for (int i = 0; i < bytes.length; i++) {
+            System.out.print(bytes[i] + ",");
+        }
+        System.out.println();
     }
 }

@@ -1,5 +1,6 @@
 package com.zkdcloud.shadowsocks.cipher;
 
+import io.netty.buffer.ByteBuf;
 import org.bouncycastle.crypto.StreamCipher;
 
 import java.security.SecureRandom;
@@ -30,10 +31,10 @@ public abstract class AbstractCipher {
     /**
      * 解密
      *
-     * @param secretBytes 密文
+     * @param secretByteBuf 密文
      * @return 明文
      */
-    public abstract byte[] decodeBytes(byte[] secretBytes);
+    public abstract byte[] decodeBytes(ByteBuf secretByteBuf);
 
     /**
      * 加密

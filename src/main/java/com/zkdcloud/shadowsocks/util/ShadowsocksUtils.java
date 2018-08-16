@@ -2,6 +2,7 @@ package com.zkdcloud.shadowsocks.util;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.handler.codec.socks.SocksAddressType;
+import io.netty.util.internal.StringUtil;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.Charset;
@@ -82,6 +83,6 @@ public class ShadowsocksUtils {
                 System.out.println("unknown addressType");
             }
         }
-        return new InetSocketAddress(host, port);
+        return !StringUtil.isNullOrEmpty(host) ? new InetSocketAddress(host, port) : null;
     }
 }
