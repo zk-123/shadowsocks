@@ -6,7 +6,8 @@ import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.codec.MessageToMessageDecoder;
+import io.netty.handler.timeout.IdleState;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +16,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.concurrent.TimeUnit;
 
 /**
  * description
@@ -22,7 +24,7 @@ import java.util.ListIterator;
  * @author zk
  * @since 2018/8/14
  */
-public class ProxyInHandler extends MessageToMessageDecoder<ByteBuf> {
+public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     /**
      * static logger
      */
@@ -33,21 +35,29 @@ public class ProxyInHandler extends MessageToMessageDecoder<ByteBuf> {
      */
     private Bootstrap bootstrap;
     /**
+     * 客户端channel
+     */
+    private Channel clientChannel;
+    /**
      * channelFuture
      */
-    private ChannelFuture remoteChannelFuture;
-
-    List<ByteBuf> byteBufList = new ArrayList<>();
+    private Channel remoteChannel;
 
     @Override
-    protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        InetSocketAddress remoteAddress = ctx.channel().attr(ContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
-        proxyMsg(remoteAddress, msg, ctx.channel());
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+        if (clientChannel == null) {
+            clientChannel = ctx.channel();
+        }
+        proxyMsg(ctx, msg);
     }
 
-    private void proxyMsg(InetSocketAddress remoteAddress, ByteBuf msg, final Channel clientChannel) throws InterruptedException {
+    private void proxyMsg(ChannelHandlerContext clientCtx, ByteBuf msg) throws InterruptedException {
         if (bootstrap == null) {
             bootstrap = new Bootstrap();
+
+            InetSocketAddress clientRecipient = clientCtx.channel().attr(ContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
+
+
             bootstrap.group(new NioEventLoopGroup())
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 60 * 1000)
                     .option(ChannelOption.SO_KEEPALIVE, true)
@@ -58,46 +68,58 @@ public class ProxyInHandler extends MessageToMessageDecoder<ByteBuf> {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
                             ch.pipeline()
-                                    .addLast(new IdleStateHandler(0,0,3))
+                                    .addLast("timeout", new IdleStateHandler(0, 0, 15, TimeUnit.MINUTES) {
+                                        @Override
+                                        protected IdleStateEvent newIdleStateEvent(IdleState state, boolean first) {
+                                            logger.debug("{} state:{}", clientRecipient.toString(), state.toString());
+                                            closeChannel();
+                                            return super.newIdleStateEvent(state, first);
+                                        }
+                                    })
                                     .addLast("query", new SimpleChannelInboundHandler<ByteBuf>() {
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                            clientChannel.writeAndFlush(msg);
+                                            clientCtx.channel().writeAndFlush(msg.retain());
                                         }
 
                                         @Override
                                         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                            remoteChannelFuture.channel().close();
-                                            remoteChannelFuture = null;
+                                            closeChannel();
                                         }
 
                                         @Override
                                         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
                                             logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
+                                            cause.printStackTrace();
+                                            closeChannel();
                                         }
                                     });
                         }
                     });
+
+            ChannelFuture channelFuture = bootstrap.connect(clientRecipient).sync();
+            remoteChannel = channelFuture.channel();
+        }
+        remoteChannel.writeAndFlush(msg.retain());
+    }
+
+    /**
+     * close future
+     */
+    private void closeChannel() {
+        if (remoteChannel != null) {
+            remoteChannel.close();
+            remoteChannel = null;
         }
 
-        remoteChannelFuture = bootstrap.connect(remoteAddress).addListener((ChannelFutureListener)(future)->{
-            if(future.isSuccess()){
-                for (ByteBuf byteBuf : byteBufList) {
-                    future.channel().writeAndFlush(byteBuf);
-                }
-                byteBufList.clear();
-            }
-        });
-
-        if(remoteChannelFuture == null){
-
+        if (clientChannel != null) {
+            clientChannel.close();
+            clientChannel = null;
         }
-        remoteChannelFuture.channel().writeAndFlush(msg.retain());
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-        remoteChannelFuture.channel().close();
-        remoteChannelFuture = null;
+        closeChannel();
     }
 }

@@ -28,11 +28,13 @@ public class PackageWaitingInHandler extends MessageToMessageDecoder<ByteBuf> {
     @Override
     public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
         ByteBuf nextByteBuf = ctx.alloc().heapBuffer();
-        for (ByteBuf byteBuf : byteBufList) {
-            nextByteBuf.writeBytes(byteBuf);
-            ReferenceCountUtil.release(byteBuf);
+        if(byteBufList != null && !byteBufList.isEmpty()){
+            for (ByteBuf byteBuf : byteBufList) {
+                nextByteBuf.writeBytes(byteBuf);
+                ReferenceCountUtil.release(byteBuf);
+            }
+            byteBufList.clear();
+            ctx.fireChannelRead(nextByteBuf);
         }
-        byteBufList.clear();
-        ctx.fireChannelRead(nextByteBuf);
     }
 }
