@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.server;
 
-import com.zkdcloud.shadowsocks.server.income.AbstractIncome;
-import com.zkdcloud.shadowsocks.server.income.TCPStartIncome;
+import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
+import com.zkdcloud.shadowsocks.server.income.TCPServerIncome;
 
 /**
  * description
@@ -9,9 +9,9 @@ import com.zkdcloud.shadowsocks.server.income.TCPStartIncome;
  * @author zk
  * @since 2018/8/11
  */
-public class ShadowsocksStart {
+public class ServerStart {
     public static void main(String[] args) throws InterruptedException {
-        AbstractIncome abstractIncome = new TCPStartIncome();
+        AbstractIncome abstractIncome = new TCPServerIncome();
         abstractIncome.startup();
     }
 }
