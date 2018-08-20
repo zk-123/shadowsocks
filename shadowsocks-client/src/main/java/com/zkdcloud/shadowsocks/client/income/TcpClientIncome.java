@@ -1,5 +1,6 @@
 package com.zkdcloud.shadowsocks.client.income;
 
+import com.zkdcloud.shadowsocks.client.channelHandler.inbound.Socks5AnalysisInbound;
 import com.zkdcloud.shadowsocks.client.channelHandler.inbound.Socks5AuthenticateInbound;
 import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
 import io.netty.bootstrap.ServerBootstrap;
@@ -50,8 +51,15 @@ public class TcpClientIncome extends AbstractIncome {
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast(new IdleStateHandler(0,0,3,TimeUnit.MINUTES))
-                        .addLast(new Socks5AuthenticateInbound());
+                        ch.pipeline().addLast(new IdleStateHandler(0,0,3,TimeUnit.MINUTES){
+                            @Override
+                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                                logger.error("channelId: {} has exception, cause : ",cause.getMessage());
+                                ctx.channel().close();
+                            }
+                        })
+                        .addLast(new Socks5AuthenticateInbound())
+                        .addLast(new Socks5AnalysisInbound());
                     }
                 }).bind(1081).sync();
         channelFuture.channel();

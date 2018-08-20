@@ -25,7 +25,7 @@ public class Socks5AuthenticateInbound extends SimpleChannelInboundHandler<ByteB
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         //check version and is/not support
         if (ClientContextConstant.SOCKS5_VERSION != msg.readByte() || !isSupport(msg)) {
-            logger.error("un support sockets5 connection");
+            logger.error("it's not sockets5 connection");
             ctx.channel().close();
             return;
         }
