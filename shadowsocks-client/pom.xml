@@ -11,5 +11,10 @@
 
     <artifactId>shadowsocks-client</artifactId>
 
-
+    <dependencies>
+        <dependency>
+            <groupId>com.zkdcloud</groupId>
+            <artifactId>shadowsocks-common</artifactId>
+        </dependency>
+    </dependencies>
 </project>

@@ -91,4 +91,10 @@ public class Aes128CfbCipher extends AbstractCipher {
     public int getKeyLength() {
         return 16;
     }
+
+    @Override
+    public byte[] getEncodeViBytes() {
+        return encodeViBytes;
+    }
+
 }

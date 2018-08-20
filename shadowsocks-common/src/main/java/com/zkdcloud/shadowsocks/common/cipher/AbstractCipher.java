@@ -57,6 +57,8 @@ public abstract class AbstractCipher {
      */
     public abstract int getKeyLength();
 
+    public abstract byte[] getEncodeViBytes();
+
     /**
      * 生成随机数 byte
      *

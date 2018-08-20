@@ -2,7 +2,7 @@ package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
-import com.zkdcloud.shadowsocks.server.context.ContextConstant;
+import com.zkdcloud.shadowsocks.server.context.ServerContextConstant;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -10,7 +10,7 @@ import io.netty.handler.codec.MessageToMessageDecoder;
 import java.net.InetSocketAddress;
 import java.util.List;
 
-import static com.zkdcloud.shadowsocks.server.context.ContextConstant.REMOTE_INET_SOCKET_ADDRESS;
+import static com.zkdcloud.shadowsocks.server.context.ServerContextConstant.REMOTE_INET_SOCKET_ADDRESS;
 
 /**
  * description
@@ -20,7 +20,7 @@ import static com.zkdcloud.shadowsocks.server.context.ContextConstant.REMOTE_INE
  */
 public class DecodeCipherStreamInHandler extends MessageToMessageDecoder<ByteBuf> {
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        Aes128CfbCipher cipher = ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).get();
+        Aes128CfbCipher cipher = ctx.channel().attr(ServerContextConstant.AES_128_CFB_KEY).get();
         byte[] realBytes = cipher.decodeBytes(msg);
 
         msg.clear().writeBytes(realBytes);

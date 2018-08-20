@@ -1,4 +1,4 @@
-package com.zkdcloud.shadowsocks.server.context;
+package com.zkdcloud.shadowsocks.common.context;
 
 import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
 import io.netty.util.AttributeKey;
@@ -16,8 +16,4 @@ public class ContextConstant {
      * 128 ctb key
      */
     public static AttributeKey<Aes128CfbCipher> AES_128_CFB_KEY = AttributeKey.valueOf("aes128");
-    /**
-     * remote address
-     */
-    public static AttributeKey<InetSocketAddress> REMOTE_INET_SOCKET_ADDRESS = AttributeKey.valueOf("remoteAddress");
 }

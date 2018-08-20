@@ -1,6 +1,6 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.server.context.ContextConstant;
+import com.zkdcloud.shadowsocks.server.context.ServerContextConstant;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
@@ -52,7 +52,7 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
         if (bootstrap == null) {
             bootstrap = new Bootstrap();
 
-            InetSocketAddress clientRecipient = clientCtx.channel().attr(ContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
+            InetSocketAddress clientRecipient = clientCtx.channel().attr(ServerContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
 
 
             bootstrap.group(new NioEventLoopGroup())
