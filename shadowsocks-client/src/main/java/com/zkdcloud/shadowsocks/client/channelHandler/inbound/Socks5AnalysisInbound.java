@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.Objects;
 
 /**
  * socks5 请求解析
@@ -32,7 +33,7 @@ public class Socks5AnalysisInbound extends SimpleChannelInboundHandler<ByteBuf> 
 
         // get cmd type
         byte aType = msg.readByte();
-        switch (CmdType.valueOf(String.valueOf(aType))) {
+        switch (Objects.requireNonNull(getTypeByValue(aType))) {
             case CONNECT:
                 addConnect(ctx, msg);
                 break;
@@ -44,6 +45,7 @@ public class Socks5AnalysisInbound extends SimpleChannelInboundHandler<ByteBuf> 
                 throw new UnsupportedOperationException("un support others cmd");
         }
         ctx.pipeline().remove(this);
+        ctx.fireChannelRead(msg.retain());
     }
 
     /**
@@ -61,5 +63,24 @@ public class Socks5AnalysisInbound extends SimpleChannelInboundHandler<ByteBuf> 
         if (logger.isDebugEnabled()) {
             logger.debug("channelId:{} queryHost: {} queryPort: {}", ctx.channel().id(), queryAddress.getHostName(), queryAddress.getPort());
         }
+
+        //add sock5 connect operator
+        ctx.pipeline().addLast(new Socks5ConnectOperatorInbound());
+    }
+
+    /**
+     * 根据value获取type
+     *
+     * @param value the value ( byte value)
+     * @return cmdType
+     */
+    private CmdType getTypeByValue(byte value){
+        CmdType[] cmdTypes = CmdType.values();
+        for (CmdType cmdType : cmdTypes) {
+            if (cmdType.getValue() == value) {
+                return cmdType;
+            }
+        }
+        return null;
     }
 }

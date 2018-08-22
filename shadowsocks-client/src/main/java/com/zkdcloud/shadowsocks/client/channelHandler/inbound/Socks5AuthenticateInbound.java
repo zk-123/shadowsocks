@@ -7,6 +7,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.zkdcloud.shadowsocks.client.context.ClientContextConstant.SOCKS5_VERSION;
 import static com.zkdcloud.shadowsocks.client.context.Socks5Method.NO_APPROVE;
 
 /**
@@ -24,14 +25,14 @@ public class Socks5AuthenticateInbound extends SimpleChannelInboundHandler<ByteB
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         //check version and is/not support
-        if (ClientContextConstant.SOCKS5_VERSION != msg.readByte() || !isSupport(msg)) {
+        if (SOCKS5_VERSION != msg.readByte() || !isSupport(msg)) {
             logger.error("it's not sockets5 connection");
             ctx.channel().close();
             return;
         }
 
         // return '0x005'|'0x00'
-        ByteBuf result = ctx.alloc().buffer().writeByte(0x005).writeByte(NO_APPROVE.getValue());
+        ByteBuf result = ctx.alloc().buffer().writeByte(SOCKS5_VERSION).writeByte(NO_APPROVE.getValue());
         ctx.channel().writeAndFlush(result);
         ctx.pipeline().remove(this);
     }
