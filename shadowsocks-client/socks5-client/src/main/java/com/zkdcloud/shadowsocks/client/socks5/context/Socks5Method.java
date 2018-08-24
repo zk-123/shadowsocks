@@ -1,4 +1,4 @@
-package com.zkdcloud.shadowsocks.client.context;
+package com.zkdcloud.shadowsocks.client.socks5.context;
 
 /**
  * socks5 approve method

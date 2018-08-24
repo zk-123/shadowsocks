@@ -1,5 +1,5 @@
 import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
-import com.zkdcloud.shadowsocks.common.util.SocksCommonUtils;
+import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptoInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.ProxyInHandler;
@@ -122,7 +122,7 @@ public class CryptoTest {
 
         switch (addressType){
             case IPv4:{
-                host = SocksCommonUtils.intToIp(msg.readInt());
+                host = SocksIpUtils.intToIp(msg.readInt());
                 port = msg.readUnsignedShort();
                 break;
             }
@@ -133,7 +133,7 @@ public class CryptoTest {
                 break;
             }
             case IPv6:{
-                host = SocksCommonUtils.ipv6toStr(msg.readBytes(16).array());
+                host = SocksIpUtils.ipv6toStr(msg.readBytes(16).array());
                 port = msg.readUnsignedShort();
                 break;
             }

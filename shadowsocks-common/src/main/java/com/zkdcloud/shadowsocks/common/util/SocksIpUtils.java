@@ -20,10 +20,11 @@ import io.netty.handler.codec.socks.SocksRequest;
 import io.netty.handler.codec.socks.SocksResponse;
 import io.netty.handler.codec.socks.UnknownSocksRequest;
 import io.netty.handler.codec.socks.UnknownSocksResponse;
+import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.StringUtil;
 
-public final class SocksCommonUtils {
+public final class SocksIpUtils {
     public static final SocksRequest UNKNOWN_SOCKS_REQUEST = new UnknownSocksRequest();
     public static final SocksResponse UNKNOWN_SOCKS_RESPONSE = new UnknownSocksResponse();
 
@@ -35,7 +36,7 @@ public final class SocksCommonUtils {
     /**
      * A constructor to stop this class being constructed.
      */
-    private SocksCommonUtils() {
+    private SocksIpUtils() {
         // NOOP
     }
 
@@ -114,5 +115,23 @@ public final class SocksCommonUtils {
         String s = buffer.toString(buffer.readerIndex(), length, CharsetUtil.US_ASCII);
         buffer.skipBytes(length);
         return s;
+    }
+
+    /**
+     * ipv4 to int
+     *
+     * @param ipAddress ipAddress like '127.0.0.1'
+     * @return int
+     */
+    public static int ip4ToInt(String ipAddress){
+        StringBuilder result = new StringBuilder();
+        String[] ipSplices = ipAddress.split(".");
+        for (String ipSplice : ipSplices) {
+            if (!ipSplice.matches("^[0-9]+$")) {
+                throw new IllegalArgumentException("not ipv4 address");
+            }
+            result.append(ipSplice);
+        }
+        return result.toString().equals("") ? 12343212 : Integer.valueOf(result.toString());
     }
 }

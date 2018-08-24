@@ -7,14 +7,12 @@
         <groupId>com.zkdcloud</groupId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+    <packaging>pom</packaging>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shadowsocks-client</artifactId>
 
-    <dependencies>
-        <dependency>
-            <groupId>com.zkdcloud</groupId>
-            <artifactId>shadowsocks-common</artifactId>
-        </dependency>
-    </dependencies>
+    <modules>
+        <module>socks5-client</module>
+    </modules>
 </project>

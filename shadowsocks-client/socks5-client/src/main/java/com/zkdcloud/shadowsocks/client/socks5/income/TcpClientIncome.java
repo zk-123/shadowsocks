@@ -1,7 +1,7 @@
-package com.zkdcloud.shadowsocks.client.income;
+package com.zkdcloud.shadowsocks.client.socks5.income;
 
-import com.zkdcloud.shadowsocks.client.channelHandler.inbound.Socks5AnalysisInbound;
-import com.zkdcloud.shadowsocks.client.channelHandler.inbound.Socks5AuthenticateInbound;
+import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5AnalysisInbound;
+import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5AuthenticateInbound;
 import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.*;

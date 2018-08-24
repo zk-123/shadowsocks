@@ -15,8 +15,8 @@
 
     <modules>
         <module>shadowsocks-server</module>
-        <module>shadowsocks-client</module>
         <module>shadowsocks-common</module>
+        <module>shadowsocks-client</module>
     </modules>
 
     <dependencyManagement>

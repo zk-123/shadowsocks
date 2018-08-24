@@ -1,7 +1,7 @@
-package com.zkdcloud.shadowsocks.client.channelHandler.inbound;
+package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.client.context.ClientContextConstant;
-import com.zkdcloud.shadowsocks.client.context.CmdType;
+import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
+import com.zkdcloud.shadowsocks.client.socks5.context.CmdType;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;

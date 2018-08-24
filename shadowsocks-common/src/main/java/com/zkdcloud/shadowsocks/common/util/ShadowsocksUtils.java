@@ -60,7 +60,7 @@ public class ShadowsocksUtils {
 
         switch (addressType) {
             case IPv4: {
-                host = SocksCommonUtils.intToIp(msg.readInt());
+                host = SocksIpUtils.intToIp(msg.readInt());
                 port = msg.readUnsignedShort();
                 break;
             }
@@ -71,7 +71,7 @@ public class ShadowsocksUtils {
                 break;
             }
             case IPv6: {
-                host = SocksCommonUtils.ipv6toStr(msg.readBytes(16).array());
+                host = SocksIpUtils.ipv6toStr(msg.readBytes(16).array());
                 port = msg.readUnsignedShort();
                 break;
             }
