@@ -28,7 +28,7 @@ public class DecodeCipherStreamInHandler extends MessageToMessageDecoder<ByteBuf
         // get Ip
         if(ctx.channel().attr(REMOTE_INET_SOCKET_ADDRESS).get() == null){
             InetSocketAddress inetSocketAddress = ShadowsocksUtils.getIp(msg);
-            if(inetSocketAddress == null || !inetSocketAddress.getHostName().contains("jianshu.com")){
+            if(inetSocketAddress == null){
                 ctx.channel().close();
                 return;
             }

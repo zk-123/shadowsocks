@@ -13,6 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -39,6 +41,10 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
      * channelFuture
      */
     private Channel remoteChannel;
+    /**
+     * msgQueue
+     */
+    private List<ByteBuf> msgHeep = new ArrayList<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -53,7 +59,6 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
             bootstrap = new Bootstrap();
 
             InetSocketAddress clientRecipient = clientCtx.channel().attr(ServerContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
-
 
             bootstrap.group(new NioEventLoopGroup())
                     .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 60 * 1000)
@@ -94,10 +99,19 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                         }
                     });
 
-            ChannelFuture channelFuture = bootstrap.connect(clientRecipient).sync();
-            remoteChannel = channelFuture.channel();
+            bootstrap.connect(clientRecipient).addListener((ChannelFutureListener) future -> {
+                if (future.isSuccess()) {
+                    remoteChannel = future.channel();
+                    writeAndFlushByteBufList();
+                } else {
+                    logger.error("connection fail");
+                    closeChannel();
+                }
+            });
         }
-        remoteChannel.writeAndFlush(msg.retain());
+
+        msgHeep.add(msg.retain());
+        writeAndFlushByteBufList();
     }
 
     /**
@@ -113,10 +127,24 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
             clientChannel.close();
             clientChannel = null;
         }
+        msgHeep.clear();
     }
 
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         closeChannel();
+    }
+
+    /**
+     * print ByteBufList to remote channel
+     */
+    private void writeAndFlushByteBufList() {
+        if (remoteChannel != null && !msgHeep.isEmpty()) {
+            for (ByteBuf messageBuf : msgHeep) {
+                remoteChannel.write(messageBuf);
+            }
+            msgHeep.clear();
+            remoteChannel.flush();
+        }
     }
 }

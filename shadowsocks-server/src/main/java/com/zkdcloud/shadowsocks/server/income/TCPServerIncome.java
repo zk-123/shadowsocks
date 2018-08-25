@@ -24,7 +24,7 @@ public class TCPServerIncome extends AbstractIncome {
     /**
      * worksLoopGroup
      */
-    private EventLoopGroup worksLoopGroup = new NioEventLoopGroup(1,new DefaultThreadFactory("works"));
+    private EventLoopGroup worksLoopGroup = new NioEventLoopGroup(10,new DefaultThreadFactory("works"));
     /**
      * serverBootstrap
      */
@@ -44,7 +44,6 @@ public class TCPServerIncome extends AbstractIncome {
                                 .addLast(new IdleStateHandler(0,0,3))
                                 .addLast(new CryptoInitInHandler())
                                 .addLast(new DecodeCipherStreamInHandler())
-                                .addLast(new PackageWaitingInHandler())
                                 .addLast(new ProxyInHandler())
                                 .addLast(new EncodeCipherStreamOutHandler());
                     }

@@ -9,6 +9,7 @@ import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
 import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
@@ -40,10 +41,11 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
      * remote bootstrap
      */
     private Bootstrap remoteBootstrap;
+    private Aes128CfbCipher decodeCipher;
     /**
      * one thread eventLoopGroup
      */
-    public static NioEventLoopGroup singleEventLoopGroup = new NioEventLoopGroup(1, new DefaultThreadFactory("singleEventLoopGroup"));
+    public static NioEventLoopGroup singleEventLoopGroup = new NioEventLoopGroup(10, new DefaultThreadFactory("singleEventLoopGroup"));
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -61,10 +63,9 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
      *
      * @param ctx ctx
      */
-    private void buildConnect(ChannelHandlerContext ctx) throws InterruptedException {
+    private void buildConnect(ChannelHandlerContext ctx){
         remoteBootstrap = new Bootstrap();
         clientChannel = ctx.channel();
-
 
         remoteBootstrap.group(singleEventLoopGroup)
                 .channel(NioSocketChannel.class)
@@ -93,22 +94,20 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                                 });
                     }
                 });
-        InetSocketAddress proxyAddress = getProxyAddress();
-        remoteBootstrap.connect(proxyAddress).addListener(new ChannelFutureListener() {
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-                if (future.isSuccess()) {
-                    proxyChannel = future.channel();
-                    //send the connection is build
-                    sendAcc();
 
-                    if (logger.isDebugEnabled()) {
-                        logger.debug("remote channel is connected");
-                    }
-                } else {
-                    logger.error("channelId: {}, cause : {}", future.channel().id(), future.cause().getMessage());
-                    closeChannel();
+        InetSocketAddress proxyAddress = getProxyAddress();
+        remoteBootstrap.connect(proxyAddress).addListener((ChannelFutureListener) future -> {
+            if (future.isSuccess()) {
+                proxyChannel = future.channel();
+                //send the connection is build
+                sendAcc();
+
+                if (logger.isDebugEnabled()) {
+                    logger.debug("remote channel is connected");
                 }
+            } else {
+                logger.error("channelId: {}, cause : {}", future.channel().id(), future.cause().getMessage());
+                closeChannel();
             }
         });
     }
@@ -224,11 +223,30 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
             //entry
             byte[] secretBytes = cipher.encodeBytes(originBytes);
+//            testEntry(originBytes,secretBytes);
 
             result.writeBytes(secretBytes);
             return result;
         } finally {
             ReferenceCountUtil.release(willEncodeMessage);
         }
+    }
+
+    private void testEntry(byte[] originBytes, byte[] secretBytes) {
+        System.out.println("origin:");
+        printBytes(originBytes);
+        if(decodeCipher == null){
+            decodeCipher = new Aes128CfbCipher("123456");
+        }
+
+        System.out.println("after decode :");
+        printBytes(decodeCipher.decodeBytes(Unpooled.wrappedBuffer(secretBytes)));
+    }
+
+    private void printBytes(byte[] data){
+        for (int i = 0; i < data.length; i++) {
+            System.out.print(data[i] + ",");
+        }
+        System.out.println();
     }
 }
