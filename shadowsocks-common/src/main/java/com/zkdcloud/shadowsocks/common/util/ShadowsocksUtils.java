@@ -85,4 +85,41 @@ public class ShadowsocksUtils {
         }
         return !StringUtil.isNullOrEmpty(host) ? new InetSocketAddress(host, port) : null;
     }
+
+    /**
+     * 读取ByteBuf中可read的字符数组
+     *
+     * @param msg msg
+     * @return byte[]
+     */
+    public static byte[] readRealBytes(ByteBuf msg) {
+        byte[] message = new byte[msg.readableBytes()];
+        msg.readBytes(message);
+        return message;
+    }
+
+    /**
+     * 获取ByteBuf中可read的字符数组
+     *
+     * @param msg msg
+     * @return byte[]
+     */
+    public static byte[] getRealBytes(ByteBuf msg) {
+        byte[] message = new byte[msg.readableBytes()];
+        msg.getBytes(0, message);
+        return message;
+    }
+
+    /**
+     * 打印debugBytes
+     *
+     * @param data data
+     */
+    public static void printDebugBytes(byte[] data){
+        for (byte aData : data) {
+            System.out.print(aData + ",");
+        }
+        System.out.println();
+    }
+
 }

@@ -3,9 +3,11 @@ package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
 import com.zkdcloud.shadowsocks.client.socks5.context.RepType;
 import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
+import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
+import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -22,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import sun.net.util.IPAddressUtil;
 
 import java.net.InetSocketAddress;
+import java.util.concurrent.TimeUnit;
 
 public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<ByteBuf> {
     /**
@@ -41,16 +44,16 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
      * remote bootstrap
      */
     private Bootstrap remoteBootstrap;
-    private Aes128CfbCipher decodeCipher;
     /**
      * one thread eventLoopGroup
      */
-    public static NioEventLoopGroup singleEventLoopGroup = new NioEventLoopGroup(10, new DefaultThreadFactory("singleEventLoopGroup"));
+    public static NioEventLoopGroup singleEventLoopGroup = new NioEventLoopGroup();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
         if (proxyChannel == null) {
-            buildConnect(ctx);
+            initAttribute(ctx);
+            buildConnect();
         }
 
         if (msg != null && msg.isReadable()) {
@@ -60,25 +63,28 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
     /**
      * build remote connection
-     *
-     * @param ctx ctx
      */
-    private void buildConnect(ChannelHandlerContext ctx){
+    private void buildConnect(){
         remoteBootstrap = new Bootstrap();
-        clientChannel = ctx.channel();
 
         remoteBootstrap.group(singleEventLoopGroup)
                 .channel(NioSocketChannel.class)
                 .option(ChannelOption.SO_KEEPALIVE, true)
+                .option(ChannelOption.TCP_NODELAY, true)
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(0, 0, 3))
+                                .addLast(new IdleStateHandler(0, 0, 10,TimeUnit.MINUTES))
                                 .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                     @Override
                                     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                        clientChannel.writeAndFlush(msg.retain());
+                                        AbstractCipher cipher = clientChannel.attr(ContextConstant.AES_128_CFB_KEY).get();
+                                        if(cipher == null){
+                                            ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
+                                            cipher = new Aes128CfbCipher(clientConfig.getPassword());
+                                        }
+                                        clientChannel.writeAndFlush(ctx.alloc().heapBuffer().writeBytes(cipher.decodeBytes(msg)));
                                     }
 
                                     @Override
@@ -95,6 +101,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                     }
                 });
 
+        //init remote attr and getProxy
         InetSocketAddress proxyAddress = getProxyAddress();
         remoteBootstrap.connect(proxyAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
@@ -148,15 +155,22 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
     }
 
     /**
+     * init about Attr
+     */
+    private void initAttribute(ChannelHandlerContext ctx){
+        clientChannel = ctx.channel();
+
+        ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
+        clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).setIfAbsent(clientConfig);
+        clientChannel.attr(ContextConstant.AES_128_CFB_KEY).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword()));
+    }
+    /**
      * get proxyAddress from 'config.json'
      *
      * @return inetSocketAddress
      */
     private InetSocketAddress getProxyAddress() {
-        ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
-        clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).setIfAbsent(clientConfig);
-        clientChannel.attr(ContextConstant.AES_128_CFB_KEY).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword()));
-
+        ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
         return new InetSocketAddress(clientConfig.getServer(), clientConfig.getServer_port());
     }
 
@@ -170,7 +184,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
         try {
             ByteBuf willEncodeMessage = clientChannel.alloc().heapBuffer();
 
-            boolean isFirstEncoding = clientChannel.attr(ClientContextConstant.FIRST_ENCODING).get() == null || !clientChannel.attr(ClientContextConstant.FIRST_ENCODING).get();
+            boolean isFirstEncoding = clientChannel.attr(ClientContextConstant.FIRST_ENCODING).get() == null || clientChannel.attr(ClientContextConstant.FIRST_ENCODING).get();
             if (isFirstEncoding) {
                 //get queryAddress
                 InetSocketAddress queryAddress = clientChannel.attr(ClientContextConstant.QUERY_ADDRESS).get();
@@ -223,30 +237,11 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
             //entry
             byte[] secretBytes = cipher.encodeBytes(originBytes);
-//            testEntry(originBytes,secretBytes);
 
             result.writeBytes(secretBytes);
             return result;
         } finally {
             ReferenceCountUtil.release(willEncodeMessage);
         }
-    }
-
-    private void testEntry(byte[] originBytes, byte[] secretBytes) {
-        System.out.println("origin:");
-        printBytes(originBytes);
-        if(decodeCipher == null){
-            decodeCipher = new Aes128CfbCipher("123456");
-        }
-
-        System.out.println("after decode :");
-        printBytes(decodeCipher.decodeBytes(Unpooled.wrappedBuffer(secretBytes)));
-    }
-
-    private void printBytes(byte[] data){
-        for (int i = 0; i < data.length; i++) {
-            System.out.print(data[i] + ",");
-        }
-        System.out.println();
     }
 }

@@ -42,19 +42,15 @@ public class TcpClientIncome extends AbstractIncome {
     @Override
     public void startup() throws InterruptedException {
         ChannelFuture channelFuture = serverBootstrap.group(bossLoopGroup,worksLoopGroup)
+                .childOption(ChannelOption.SO_KEEPALIVE,true)
                 .channel(NioServerSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 5120)
-                .option(ChannelOption.SO_RCVBUF, 32 * 1024)
-                .childOption(ChannelOption.SO_KEEPALIVE, true)
-                .childOption(ChannelOption.TCP_NODELAY, true)
-                .childOption(ChannelOption.SO_LINGER, 1)
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline().addLast(new IdleStateHandler(0,0,3,TimeUnit.MINUTES){
                             @Override
                             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                                logger.error("channelId: {} has exception, cause : ",cause.getMessage());
+                                logger.error("channelId: {} has exception, cause : {}",ctx.channel().id(),cause.getMessage());
                                 ctx.channel().close();
                             }
                         })
