@@ -28,4 +28,6 @@ public class ClientContextConstant {
      * client first encoding flag
      */
     public static AttributeKey<Boolean> FIRST_ENCODING = AttributeKey.valueOf("firstEncoding");
+
+    public static Long connectionTimes = 1L;
 }

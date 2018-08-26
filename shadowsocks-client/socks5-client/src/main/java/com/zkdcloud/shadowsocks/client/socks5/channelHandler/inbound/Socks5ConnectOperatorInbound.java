@@ -75,7 +75,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(0, 0, 10,TimeUnit.MINUTES))
+                                .addLast(new IdleStateHandler(0, 0, 30,TimeUnit.SECONDS))
                                 .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                     @Override
                                     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -89,6 +89,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
                                     @Override
                                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                        logger.debug("remoteId {} is inactive",ctx.channel().id());
                                         closeChannel();
                                     }
 
@@ -110,7 +111,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                 sendAcc();
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("remote channel is connected");
+                    logger.debug("-------------------> {} remote channel {} is connected",ClientContextConstant.connectionTimes++,proxyChannel.id());
                 }
             } else {
                 logger.error("channelId: {}, cause : {}", future.channel().id(), future.cause().getMessage());

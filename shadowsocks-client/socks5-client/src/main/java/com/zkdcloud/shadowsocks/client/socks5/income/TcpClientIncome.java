@@ -29,11 +29,11 @@ public class TcpClientIncome extends AbstractIncome {
     /**
      * boosLoopGroup
      */
-    private EventLoopGroup bossLoopGroup = new NioEventLoopGroup(1,new DefaultThreadFactory("boss"));
+    private EventLoopGroup bossLoopGroup = new NioEventLoopGroup();
     /**
      * worksLoopGroup
      */
-    private EventLoopGroup worksLoopGroup = new NioEventLoopGroup(1,new DefaultThreadFactory("works"));
+    private EventLoopGroup worksLoopGroup = new NioEventLoopGroup();
     /**
      * serverBootstrap
      */

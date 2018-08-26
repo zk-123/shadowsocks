@@ -68,7 +68,7 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
                             ch.pipeline()
-                                    .addLast("timeout", new IdleStateHandler(0, 0, 10, TimeUnit.SECONDS) {
+                                    .addLast("timeout", new IdleStateHandler(0, 0, 30, TimeUnit.SECONDS) {
                                         @Override
                                         protected IdleStateEvent newIdleStateEvent(IdleState state, boolean first) {
                                             logger.debug("{} state:{}", remoteAddress.toString(), state.toString());
@@ -84,6 +84,9 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
                                         @Override
                                         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                            if(logger.isDebugEnabled()){
+                                                logger.debug("{}:{} channelId:{} is inactive",remoteAddress.getHostName(),remoteAddress.getPort(),remoteChannel.id());
+                                            }
                                             closeChannel();
                                         }
 
