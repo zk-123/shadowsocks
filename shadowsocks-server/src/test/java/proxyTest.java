@@ -1,4 +1,4 @@
-import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;

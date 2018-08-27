@@ -1,9 +1,7 @@
 package com.zkdcloud.shadowsocks.common.context;
 
-import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import io.netty.util.AttributeKey;
-
-import java.net.InetSocketAddress;
 
 /**
  * the constant of context

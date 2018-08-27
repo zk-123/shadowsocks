@@ -1,4 +1,4 @@
-import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptoInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;

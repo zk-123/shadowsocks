@@ -1,5 +1,6 @@
-package com.zkdcloud.shadowsocks.common.cipher;
+package com.zkdcloud.shadowsocks.common.cipher.stream;
 
+import com.zkdcloud.shadowsocks.common.cipher.LocalStreamCipher;
 import io.netty.buffer.ByteBuf;
 
 /**

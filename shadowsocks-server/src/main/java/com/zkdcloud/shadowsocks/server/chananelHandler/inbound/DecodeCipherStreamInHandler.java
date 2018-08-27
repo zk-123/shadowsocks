@@ -1,9 +1,8 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.common.cipher.Aes128CfbCipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
-import com.zkdcloud.shadowsocks.server.context.ServerContextConstant;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
