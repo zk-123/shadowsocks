@@ -4,8 +4,6 @@ import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.StreamCipher;
-import org.bouncycastle.crypto.engines.AESEngine;
-import org.bouncycastle.crypto.modes.CFBBlockCipher;
 import org.bouncycastle.crypto.params.KeyParameter;
 import org.bouncycastle.crypto.params.ParametersWithIV;
 
@@ -20,31 +18,30 @@ public abstract class LocalStreamCipher extends AbstractCipher {
     /**
      * 解密cipher
      */
-    protected StreamCipher decodeStreamCipher;
+    private StreamCipher decodeStreamCipher;
     /**
      * 加密cipher
      */
-    protected StreamCipher encodeStreamCipher;
+    private StreamCipher encodeStreamCipher;
     /**
      * 解密cipher是否已初始化
      */
-    protected boolean decodeInit;
+    private boolean decodeInit;
     /**
      * 加密向量
      */
-    protected byte[] encodeViBytes = null;
+    private byte[] encodeViBytes = null;
     /**
      * localStreamCipher
      *
      * @param password password
      */
-    public LocalStreamCipher(String password) {
-        super(password);
-    }
-
     public LocalStreamCipher(String password){
-
+        super(password);
+        decodeStreamCipher = getNewCipherInstance();
+        encodeStreamCipher = getNewCipherInstance();
     }
+
     @Override
     public byte[] decodeBytes(ByteBuf secretByteBuf) {
         return decodeBytes(ShadowsocksUtils.readRealBytes(secretByteBuf));
@@ -61,7 +58,6 @@ public abstract class LocalStreamCipher extends AbstractCipher {
             CipherParameters viParameter = new ParametersWithIV(new KeyParameter(getKey()), viBytes);
 
             //init
-            decodeStreamCipher = new CFBBlockCipher(new AESEngine(), getKeyLength() * 8);
             decodeStreamCipher.init(false, viParameter);
             decodeInit = true;
         }
@@ -90,11 +86,20 @@ public abstract class LocalStreamCipher extends AbstractCipher {
     }
 
     /**
+     * 获取新的StreamCipher
+     *
+     * @return streamCipher
+     */
+    public abstract StreamCipher getNewCipherInstance();
+
+    /**
      * 获取向量长度
      *
      * @return 向量长度
      */
     public abstract int getVILength();
 
-    public abstract byte[] getEncodeViBytes();
+    public byte[] getEncodeViBytes(){
+        return encodeViBytes;
+    }
 }

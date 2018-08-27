@@ -5,6 +5,7 @@ import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
+import org.bouncycastle.crypto.engines.AESEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class CryptoInitInHandler extends MessageToMessageDecoder<ByteBuf> {
 
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         if(ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).get() == null){
-            ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).set(new Aes128CfbCipher("123456"));
+            ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).set(new Aes128CfbCipher("123456",new AESEngine()));
         }
         out.add(ctx.alloc().heapBuffer(msg.readableBytes()).writeBytes(msg));
     }

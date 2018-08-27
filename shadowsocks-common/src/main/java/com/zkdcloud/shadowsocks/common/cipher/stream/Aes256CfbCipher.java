@@ -1,32 +1,23 @@
 package com.zkdcloud.shadowsocks.common.cipher.stream;
 
 import com.zkdcloud.shadowsocks.common.cipher.LocalStreamCipher;
-import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
 
-/**
- * aes-128
- *
- * @author zk
- * @since 2018/8/11
- */
-public class Aes128CfbCipher extends LocalStreamCipher {
-
-
+public class Aes256CfbCipher extends LocalStreamCipher {
     /**
      * localStreamCipher
      *
      * @param password password
      */
-    public Aes128CfbCipher(String password) {
+    public Aes256CfbCipher(String password) {
         super(password);
     }
 
     @Override
     public StreamCipher getNewCipherInstance() {
-        return new CFBBlockCipher(new AESEngine(), getKeyLength() * 8);
+        return new CFBBlockCipher(new AESEngine(),getKeyLength() * 8);
     }
 
     @Override
@@ -36,7 +27,6 @@ public class Aes128CfbCipher extends LocalStreamCipher {
 
     @Override
     public int getKeyLength() {
-        return 16;
+        return 32;
     }
-
 }

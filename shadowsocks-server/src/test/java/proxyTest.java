@@ -3,6 +3,7 @@ import io.netty.buffer.Unpooled;
 import io.netty.channel.*;
 import io.netty.channel.embedded.EmbeddedChannel;
 import io.netty.handler.codec.http.HttpRequestDecoder;
+import org.bouncycastle.crypto.engines.AESEngine;
 import org.junit.Test;
 
 /**
@@ -26,7 +27,7 @@ public class proxyTest {
 
     @Test
     public void testEnDe(){
-        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456");
+        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456",new AESEngine());
         byte[] orign = new byte[]{1,2,3,4,5,6,7,8,9};
         System.out.println("origin : ");
         print(orign);

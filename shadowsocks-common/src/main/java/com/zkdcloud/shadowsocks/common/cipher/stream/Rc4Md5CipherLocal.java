@@ -1,7 +1,8 @@
 package com.zkdcloud.shadowsocks.common.cipher.stream;
 
 import com.zkdcloud.shadowsocks.common.cipher.LocalStreamCipher;
-import io.netty.buffer.ByteBuf;
+import org.bouncycastle.crypto.StreamCipher;
+import org.bouncycastle.crypto.engines.RC4Engine;
 
 /**
  * Rc4 cipher
@@ -10,6 +11,8 @@ import io.netty.buffer.ByteBuf;
  * @since 2018/8/27
  */
 public class Rc4Md5CipherLocal extends LocalStreamCipher {
+
+
     /**
      * localStreamCipher
      *
@@ -17,35 +20,21 @@ public class Rc4Md5CipherLocal extends LocalStreamCipher {
      */
     public Rc4Md5CipherLocal(String password) {
         super(password);
+
     }
 
     @Override
-    public byte[] decodeBytes(ByteBuf secretByteBuf) {
-        return new byte[0];
-    }
-
-    @Override
-    public byte[] decodeBytes(byte[] secretBytes) {
-        return new byte[0];
-    }
-
-    @Override
-    public byte[] encodeBytes(byte[] originBytes) {
-        return new byte[0];
+    public StreamCipher getNewCipherInstance() {
+        return new RC4Engine();
     }
 
     @Override
     public int getVILength() {
-        return 0;
+        return 16;
     }
 
     @Override
     public int getKeyLength() {
-        return 0;
-    }
-
-    @Override
-    public byte[] getEncodeViBytes() {
-        return new byte[0];
+        return 16;
     }
 }

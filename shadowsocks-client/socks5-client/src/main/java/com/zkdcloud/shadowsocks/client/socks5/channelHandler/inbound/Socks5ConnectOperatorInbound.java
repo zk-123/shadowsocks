@@ -16,6 +16,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
+import org.bouncycastle.crypto.engines.AESEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.net.util.IPAddressUtil;
@@ -79,7 +80,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                                         AbstractCipher cipher = clientChannel.attr(ContextConstant.AES_128_CFB_KEY).get();
                                         if(cipher == null){
                                             ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
-                                            cipher = new Aes128CfbCipher(clientConfig.getPassword());
+                                            cipher = new Aes128CfbCipher(clientConfig.getPassword(),new AESEngine());
                                         }
                                         clientChannel.writeAndFlush(ctx.alloc().heapBuffer().writeBytes(cipher.decodeBytes(msg)));
                                     }
@@ -160,7 +161,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
         ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
         clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).setIfAbsent(clientConfig);
-        clientChannel.attr(ContextConstant.AES_128_CFB_KEY).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword()));
+        clientChannel.attr(ContextConstant.AES_128_CFB_KEY).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword(),new AESEngine()));
     }
     /**
      * get proxyAddress from 'config.json'
