@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.common.cipher;
 
+import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;
-import org.bouncycastle.crypto.StreamCipher;
 
 import java.security.SecureRandom;
 
@@ -13,21 +13,14 @@ import java.security.SecureRandom;
  */
 public abstract class AbstractCipher {
     /**
-     * 密钥
+     * key
      */
-    private byte[] keySecret;
-    /**
-     * 解密
-     */
-    private StreamCipher streamCipher;
+    private byte[] key = null;
 
-    public AbstractCipher(){
-
+    public AbstractCipher(String password) {
+        key = ShadowsocksUtils.getShadowsocksKey(password, getKeyLength());
     }
 
-    private void initKeySecret(){
-
-    }
     /**
      * 解密
      *
@@ -37,18 +30,20 @@ public abstract class AbstractCipher {
     public abstract byte[] decodeBytes(ByteBuf secretByteBuf);
 
     /**
+     * 解密
+     *
+     * @param secretBytes 密文
+     * @return 明文
+     */
+    public abstract byte[] decodeBytes(byte[] secretBytes);
+
+    /**
      * 加密
      *
      * @param originBytes 明文
      * @return 密文
      */
     public abstract byte[] encodeBytes(byte[] originBytes);
-    /**
-     * 获取向量长度
-     *
-     * @return 向量长度
-     */
-    public abstract int getVILength();
 
     /**
      * 获取密钥长度
@@ -57,17 +52,19 @@ public abstract class AbstractCipher {
      */
     public abstract int getKeyLength();
 
-    public abstract byte[] getEncodeViBytes();
-
     /**
      * 生成随机数 byte
      *
      * @param size 位数
      * @return random of bytes
      */
-    protected byte[] getRandomBytes(int size){
+    protected byte[] getRandomBytes(int size) {
         byte[] bytes = new byte[size];
         new SecureRandom().nextBytes(bytes);
         return bytes;
+    }
+
+    public byte[] getKey() {
+        return key;
     }
 }
