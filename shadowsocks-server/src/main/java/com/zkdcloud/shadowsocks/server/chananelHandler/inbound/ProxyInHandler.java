@@ -61,10 +61,6 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
             InetSocketAddress remoteAddress = clientCtx.channel().attr(ServerContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
 
             bootstrap.group(clientCtx.channel().eventLoop())
-                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 60 * 1000)
-                    .option(ChannelOption.SO_KEEPALIVE, true)
-                    .option(ChannelOption.SO_RCVBUF, 32 * 1024)// 读缓冲区为32k
-                    .option(ChannelOption.TCP_NODELAY, true)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<Channel>() {
                         @Override
@@ -147,15 +143,18 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
      */
     private void writeAndFlushByteBufList() {
         if (remoteChannel != null && !clientBuffs.isEmpty()) {
+
+            ByteBuf willWriteMsg = PooledByteBufAllocator.DEFAULT.heapBuffer();
             for (ByteBuf messageBuf : clientBuffs) {
-                remoteChannel.write(messageBuf);
+                willWriteMsg.writeBytes(ShadowsocksUtils.readRealBytes(messageBuf));
+                ReferenceCountUtil.release(messageBuf);
             }
             clientBuffs.clear();
-            remoteChannel.flush();
 
             if(logger.isDebugEnabled()){
-                logger.debug("channel id {},remote channel write", remoteChannel.id().toString());
+                logger.debug("channel id {},remote channel write {} bytes", remoteChannel.id().toString(), willWriteMsg.readableBytes());
             }
+            remoteChannel.writeAndFlush(willWriteMsg);
         }
     }
 }
