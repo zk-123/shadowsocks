@@ -32,10 +32,6 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
      */
     private static Logger logger = LoggerFactory.getLogger(ProxyInHandler.class);
     /**
-     * proxyEventLoopGroup
-     */
-    private static EventLoopGroup proxyEventLoopGroup = new NioEventLoopGroup();
-    /**
      * bootstrap
      */
     private Bootstrap bootstrap;
@@ -47,6 +43,8 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
      * channelFuture
      */
     private Channel remoteChannel;
+
+    private List<ByteBuf> clientBuffs = new ArrayList<>();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -62,7 +60,11 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
             InetSocketAddress remoteAddress = clientCtx.channel().attr(ServerContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
 
-            bootstrap.group(proxyEventLoopGroup)
+            bootstrap.group(clientCtx.channel().eventLoop())
+                    .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 60 * 1000)
+                    .option(ChannelOption.SO_KEEPALIVE, true)
+                    .option(ChannelOption.SO_RCVBUF, 32 * 1024)// 读缓冲区为32k
+                    .option(ChannelOption.TCP_NODELAY, true)
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<Channel>() {
                         @Override
@@ -106,7 +108,8 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                     if (logger.isDebugEnabled()) {
                         logger.debug("host: {}:{} remoteChannel {}, writeByteBuf {}", remoteAddress.getHostName(), remoteAddress.getPort(), remoteChannel.id(), msg.readableBytes());
                     }
-                    remoteChannel.writeAndFlush(msg);
+                    clientBuffs.add(msg.retain());
+                    writeAndFlushByteBufList();
                 } else {
                     logger.error(remoteAddress.getHostName() + ":" + remoteAddress.getPort() + " connection fail");
                     ReferenceCountUtil.release(msg);
@@ -115,15 +118,8 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
             });
         }
 
-        if(remoteChannel == null){
-            msg.retain();
-        } else {
-            if (logger.isDebugEnabled()) {
-                InetSocketAddress remoteAddress = clientChannel.attr(ServerContextConstant.REMOTE_INET_SOCKET_ADDRESS).get();
-                logger.debug("host: {}:{} remoteChannel {}, writeByteBuf {}", remoteAddress.getHostName(), remoteAddress.getPort(), remoteChannel.id(), msg.readableBytes());
-            }
-            remoteChannel.writeAndFlush(msg.retain());
-        }
+        clientBuffs.add(msg.retain());
+        writeAndFlushByteBufList();
     }
 
     /**
@@ -150,6 +146,16 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
      * print ByteBufList to remote channel
      */
     private void writeAndFlushByteBufList() {
+        if (remoteChannel != null && !clientBuffs.isEmpty()) {
+            for (ByteBuf messageBuf : clientBuffs) {
+                remoteChannel.write(messageBuf);
+            }
+            clientBuffs.clear();
+            remoteChannel.flush();
 
+            if(logger.isDebugEnabled()){
+                logger.debug("channel id {},remote channel write", remoteChannel.id().toString());
+            }
+        }
     }
 }
