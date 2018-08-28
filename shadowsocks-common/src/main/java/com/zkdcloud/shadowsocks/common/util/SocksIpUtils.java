@@ -20,7 +20,6 @@ import io.netty.handler.codec.socks.SocksRequest;
 import io.netty.handler.codec.socks.SocksResponse;
 import io.netty.handler.codec.socks.UnknownSocksRequest;
 import io.netty.handler.codec.socks.UnknownSocksResponse;
-import io.netty.util.AsciiString;
 import io.netty.util.CharsetUtil;
 import io.netty.util.internal.StringUtil;
 
@@ -32,6 +31,8 @@ public final class SocksIpUtils {
     private static final int FIRST_ADDRESS_OCTET_SHIFT = 24;
     private static final int THIRD_ADDRESS_OCTET_SHIFT = 8;
     private static final int XOR_DEFAULT_VALUE = 0xff;
+    private static final char[] ipv6conseqZeroFiller = {':', ':'};
+    private static final char ipv6hextetSeparator = ':';
 
     /**
      * A constructor to stop this class being constructed.
@@ -47,9 +48,6 @@ public final class SocksIpUtils {
                 (i & XOR_DEFAULT_VALUE);
     }
 
-    private static final char[] ipv6conseqZeroFiller = {':', ':'};
-    private static final char ipv6hextetSeparator = ':';
-
     /**
      * Convert numeric IPv6 to compressed format, where
      * the longest sequence of 0's (with 2 or more 0's) is replaced with "::"
@@ -61,7 +59,7 @@ public final class SocksIpUtils {
         int cmprHextet = -1;
         //length of compressed region
         int cmprSize = 0;
-        for (int hextet = 0; hextet < 8;) {
+        for (int hextet = 0; hextet < 8; ) {
             int curByte = hextet * 2;
             int size = 0;
             while (curByte < src.length && src[curByte] == 0
@@ -98,7 +96,7 @@ public final class SocksIpUtils {
 
     private static void ipv6toStr(StringBuilder sb, byte[] src, int fromHextet, int toHextet) {
         int i;
-        toHextet --;
+        toHextet--;
         for (i = fromHextet; i < toHextet; i++) {
             appendHextet(sb, src, i);
             sb.append(ipv6hextetSeparator);
@@ -123,7 +121,7 @@ public final class SocksIpUtils {
      * @param ipAddress ipAddress like '127.0.0.1'
      * @return int
      */
-    public static int ip4ToInt(String ipAddress){
+    public static int ip4ToInt(String ipAddress) {
         StringBuilder result = new StringBuilder();
         String[] ipSplices = ipAddress.split(".");
         for (String ipSplice : ipSplices) {

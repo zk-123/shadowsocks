@@ -12,12 +12,12 @@ public class Aes192CfbCipher extends LocalStreamCipher {
      * @param password password
      */
     public Aes192CfbCipher(String password) {
-        super(password);
+        super("aes-192-cfb", password);
     }
 
     @Override
     public StreamCipher getNewCipherInstance() {
-        return new CFBBlockCipher(new AESEngine(),getKeyLength() * 8);
+        return new CFBBlockCipher(new AESEngine(), getKeyLength() * 8);
     }
 
     @Override

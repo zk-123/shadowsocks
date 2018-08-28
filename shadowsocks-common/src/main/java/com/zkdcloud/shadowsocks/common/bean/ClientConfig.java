@@ -14,7 +14,7 @@ public class ClientConfig {
     /**
      * server port
      */
-    private int server_port;
+    private short server_port;
     /**
      * password
      */
@@ -48,11 +48,11 @@ public class ClientConfig {
         this.server = server;
     }
 
-    public int getServer_port() {
+    public short getServer_port() {
         return server_port;
     }
 
-    public void setServer_port(int server_port) {
+    public void setServer_port(short server_port) {
         this.server_port = server_port;
     }
 

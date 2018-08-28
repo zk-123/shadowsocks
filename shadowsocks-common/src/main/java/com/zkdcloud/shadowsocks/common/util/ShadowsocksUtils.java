@@ -115,7 +115,7 @@ public class ShadowsocksUtils {
      *
      * @param data data
      */
-    public static void printDebugBytes(byte[] data){
+    public static void printDebugBytes(byte[] data) {
         for (byte aData : data) {
             System.out.print(aData + ",");
         }

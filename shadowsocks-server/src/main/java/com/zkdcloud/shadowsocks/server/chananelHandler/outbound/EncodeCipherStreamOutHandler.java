@@ -10,7 +10,7 @@ import io.netty.handler.codec.MessageToMessageEncoder;
 import java.util.List;
 
 /**
- * description
+ * encode laws text
  *
  * @author zk
  * @since 2018/8/14
@@ -18,7 +18,7 @@ import java.util.List;
 public class EncodeCipherStreamOutHandler extends MessageToMessageEncoder<ByteBuf> {
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        AbstractCipher cipher = ctx.channel().attr(ContextConstant.AES_128_CFB_KEY).get();
+        AbstractCipher cipher = ctx.channel().attr(ContextConstant.CIPHER).get();
 
         byte[] realData = new byte[msg.readableBytes()];
         msg.getBytes(0,realData);

@@ -11,7 +11,7 @@ public class Salsa20Cipher extends LocalStreamCipher {
      * @param password password
      */
     public Salsa20Cipher(String password) {
-        super(password);
+        super("salsa20", password);
     }
 
     @Override

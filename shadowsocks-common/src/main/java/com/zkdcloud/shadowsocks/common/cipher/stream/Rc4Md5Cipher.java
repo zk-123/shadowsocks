@@ -19,7 +19,7 @@ public class Rc4Md5Cipher extends LocalStreamCipher {
      * @param password password
      */
     public Rc4Md5Cipher(String password) {
-        super(password);
+        super("rc4-md5", password);
 
     }
 

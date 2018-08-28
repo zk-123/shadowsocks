@@ -11,7 +11,7 @@ public class Chacha20IetfCipher extends LocalStreamCipher {
      * @param password password
      */
     public Chacha20IetfCipher(String password) {
-        super(password);
+        super("chacha20-ietf", password);
     }
 
     @Override

@@ -77,10 +77,10 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                                 .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                     @Override
                                     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                        AbstractCipher cipher = clientChannel.attr(ContextConstant.AES_128_CFB_KEY).get();
+                                        AbstractCipher cipher = clientChannel.attr(ContextConstant.CIPHER).get();
                                         if(cipher == null){
                                             ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
-                                            cipher = new Aes128CfbCipher(clientConfig.getPassword(),new AESEngine());
+                                            cipher = new Aes128CfbCipher(clientConfig.getPassword());
                                         }
                                         clientChannel.writeAndFlush(ctx.alloc().heapBuffer().writeBytes(cipher.decodeBytes(msg)));
                                     }
@@ -159,9 +159,10 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
     private void initAttribute(ChannelHandlerContext ctx){
         clientChannel = ctx.channel();
 
+        // inti clientConfig
         ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
         clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).setIfAbsent(clientConfig);
-        clientChannel.attr(ContextConstant.AES_128_CFB_KEY).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword(),new AESEngine()));
+        clientChannel.attr(ContextConstant.CIPHER).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword()));
     }
     /**
      * get proxyAddress from 'config.json'
@@ -230,7 +231,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
         try {
             ByteBuf result = clientChannel.alloc().heapBuffer();
 
-            Aes128CfbCipher cipher = clientChannel.attr(ContextConstant.AES_128_CFB_KEY).get();
+            AbstractCipher cipher = clientChannel.attr(ContextConstant.CIPHER).get();
             byte[] originBytes = new byte[willEncodeMessage.readableBytes()];
             willEncodeMessage.readBytes(originBytes);
 

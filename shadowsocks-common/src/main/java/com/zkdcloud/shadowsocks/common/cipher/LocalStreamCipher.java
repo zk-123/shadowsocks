@@ -31,13 +31,15 @@ public abstract class LocalStreamCipher extends AbstractCipher {
      * 加密向量
      */
     private byte[] encodeViBytes = null;
+
     /**
      * localStreamCipher
      *
-     * @param password password
+     * @param cipherName cipherName
+     * @param password   password
      */
-    public LocalStreamCipher(String password){
-        super(password);
+    public LocalStreamCipher(String cipherName, String password) {
+        super(cipherName, password);
         decodeStreamCipher = getNewCipherInstance();
         encodeStreamCipher = getNewCipherInstance();
     }
@@ -99,7 +101,7 @@ public abstract class LocalStreamCipher extends AbstractCipher {
      */
     public abstract int getVILength();
 
-    public byte[] getEncodeViBytes(){
+    public byte[] getEncodeViBytes() {
         return encodeViBytes;
     }
 }

@@ -12,12 +12,12 @@ public class Camellia128CfbCipher extends LocalStreamCipher {
      * @param password password
      */
     public Camellia128CfbCipher(String password) {
-        super(password);
+        super("camellia-128-cfb", password);
     }
 
     @Override
     public StreamCipher getNewCipherInstance() {
-        return new CFBBlockCipher(new CamelliaEngine(),getKeyLength() * 8);
+        return new CFBBlockCipher(new CamelliaEngine(), getKeyLength() * 8);
     }
 
     @Override

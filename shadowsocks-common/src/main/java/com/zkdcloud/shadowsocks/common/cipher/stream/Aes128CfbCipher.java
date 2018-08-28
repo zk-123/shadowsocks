@@ -1,7 +1,6 @@
 package com.zkdcloud.shadowsocks.common.cipher.stream;
 
 import com.zkdcloud.shadowsocks.common.cipher.LocalStreamCipher;
-import org.bouncycastle.crypto.BlockCipher;
 import org.bouncycastle.crypto.StreamCipher;
 import org.bouncycastle.crypto.engines.AESEngine;
 import org.bouncycastle.crypto.modes.CFBBlockCipher;
@@ -14,14 +13,13 @@ import org.bouncycastle.crypto.modes.CFBBlockCipher;
  */
 public class Aes128CfbCipher extends LocalStreamCipher {
 
-
     /**
      * localStreamCipher
      *
      * @param password password
      */
     public Aes128CfbCipher(String password) {
-        super(password);
+        super("aes-128-cfb", password);
     }
 
     @Override

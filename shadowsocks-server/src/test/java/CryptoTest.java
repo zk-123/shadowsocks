@@ -82,7 +82,7 @@ public class CryptoTest {
     }
     @Test
     public void testRealDecode(){
-        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456",new AESEngine());
+        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456");
         byte[] target = aes128CfbCipher.decodeBytes(Unpooled.buffer().writeBytes(orginByte));
 
         System.out.println("right:");

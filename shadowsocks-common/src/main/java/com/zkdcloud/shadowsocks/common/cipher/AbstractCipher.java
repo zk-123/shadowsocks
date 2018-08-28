@@ -13,11 +13,16 @@ import java.security.SecureRandom;
  */
 public abstract class AbstractCipher {
     /**
+     * cipher name
+     */
+    private String cipherName;
+    /**
      * key
      */
     private byte[] key = null;
 
-    public AbstractCipher(String password) {
+    public AbstractCipher(String cipherName, String password) {
+        this.cipherName = cipherName;
         key = ShadowsocksUtils.getShadowsocksKey(password, getKeyLength());
     }
 
@@ -66,5 +71,9 @@ public abstract class AbstractCipher {
 
     public byte[] getKey() {
         return key;
+    }
+
+    public String getCipherName() {
+        return cipherName;
     }
 }

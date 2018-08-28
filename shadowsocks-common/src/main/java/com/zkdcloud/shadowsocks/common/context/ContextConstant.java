@@ -1,6 +1,8 @@
 package com.zkdcloud.shadowsocks.common.context;
 
-import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
+import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
+import com.zkdcloud.shadowsocks.common.bean.ServerConfig;
+import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import io.netty.util.AttributeKey;
 
 /**
@@ -11,17 +13,29 @@ import io.netty.util.AttributeKey;
  */
 public class ContextConstant {
     /**
-     * 128 ctb key
+     * cipher
      */
-    public static AttributeKey<Aes128CfbCipher> AES_128_CFB_KEY = AttributeKey.valueOf("aes128");
+    public static AttributeKey<AbstractCipher> CIPHER = AttributeKey.valueOf("cipher");
+    /**
+     * serverConfig
+     */
+    public static AttributeKey<ServerConfig> SERVER_CONFIG = AttributeKey.valueOf("serverConfig");
+    /**
+     * clientConfig
+     */
+    public static AttributeKey<ClientConfig> CLIENT_CONFIG = AttributeKey.valueOf("clientConfig");
 
     /**
      * configProperties contains client and server
      */
-    public interface ConfigProperties{
+    public interface ConfigProperties {
         /**
          * config.json of client
          */
         String CLIENT_CONFIG_FILE = "config.json";
+        /**
+         * server.json of server
+         */
+        String SERVER_CONFIG_FILE = "server.json";
     }
 }
