@@ -17,7 +17,7 @@ public class Camellia128CfbCipher extends LocalStreamCipher {
 
     @Override
     public StreamCipher getNewCipherInstance() {
-        return new CFBBlockCipher(new CamelliaEngine(), getKeyLength() * 8);
+        return new CFBBlockCipher(new CamelliaEngine(), getVILength() * 8);
     }
 
     @Override

@@ -2,9 +2,9 @@
   "server": "127.0.0.1",
   "server_port": 8989,
   "password": "123456",
-  "method": "aes-192-cfb",
+  "method": "salsa20",
   "plugin": "",
   "plugin_opts": "",
   "remarks": "",
-  "timeout": 5
+  "timeout": 300
 }

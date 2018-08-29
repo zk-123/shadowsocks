@@ -34,7 +34,7 @@ public class CryptoInitInHandler extends MessageToMessageDecoder<ByteBuf> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
+        logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage(), cause);
     }
 
     /**
@@ -42,7 +42,7 @@ public class CryptoInitInHandler extends MessageToMessageDecoder<ByteBuf> {
      *
      * @param ctx client context
      */
-    private void initAttribute(ChannelHandlerContext ctx){
+    private void initAttribute(ChannelHandlerContext ctx) {
         //server config
         ServerConfig serverConfig = ShadowsocksConfigUtil.getServerConfigInstance();
         ctx.channel().attr(ContextConstant.SERVER_CONFIG).setIfAbsent(serverConfig);

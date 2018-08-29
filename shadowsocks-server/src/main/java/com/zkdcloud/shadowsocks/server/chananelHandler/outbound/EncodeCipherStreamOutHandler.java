@@ -21,7 +21,7 @@ public class EncodeCipherStreamOutHandler extends MessageToMessageEncoder<ByteBu
         AbstractCipher cipher = ctx.channel().attr(ContextConstant.CIPHER).get();
 
         byte[] realData = new byte[msg.readableBytes()];
-        msg.getBytes(0,realData);
+        msg.getBytes(0, realData);
 
         byte[] resultData = cipher.encodeBytes(realData);
         out.add(Unpooled.buffer().writeBytes(resultData));

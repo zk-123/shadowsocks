@@ -17,7 +17,7 @@ public class Aes256CfbCipher extends LocalStreamCipher {
 
     @Override
     public StreamCipher getNewCipherInstance() {
-        return new CFBBlockCipher(new AESEngine(), getKeyLength() * 8);
+        return new CFBBlockCipher(new AESEngine(), getVILength() * 8);
     }
 
     @Override

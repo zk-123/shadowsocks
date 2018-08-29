@@ -1,14 +1,18 @@
 package com.zkdcloud.shadowsocks.server.income;
 
 import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
-import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.*;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptoInitInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.ProxyInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.outbound.EncodeCipherStreamOutHandler;
 import io.netty.bootstrap.ServerBootstrap;
-import io.netty.channel.*;
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFuture;
+import io.netty.channel.ChannelInitializer;
+import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
-import io.netty.util.concurrent.DefaultThreadFactory;
 
 import java.util.concurrent.TimeUnit;
 
@@ -38,7 +42,7 @@ public class TCPServerIncome extends AbstractIncome {
                 .childHandler(new ChannelInitializer<Channel>() {
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(0,0,10,TimeUnit.SECONDS))
+                                .addLast(new IdleStateHandler(0, 0, 10, TimeUnit.SECONDS))
                                 .addLast(new CryptoInitInHandler())
                                 .addLast(new DecodeCipherStreamInHandler())
                                 .addLast(new ProxyInHandler())

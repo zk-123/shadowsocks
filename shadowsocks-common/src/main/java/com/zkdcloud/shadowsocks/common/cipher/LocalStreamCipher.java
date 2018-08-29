@@ -18,19 +18,19 @@ public abstract class LocalStreamCipher extends AbstractCipher {
     /**
      * 解密cipher
      */
-    private StreamCipher decodeStreamCipher;
+    protected StreamCipher decodeStreamCipher;
     /**
      * 加密cipher
      */
-    private StreamCipher encodeStreamCipher;
+    protected StreamCipher encodeStreamCipher;
     /**
      * 解密cipher是否已初始化
      */
-    private boolean decodeInit;
+    protected boolean decodeInit;
     /**
      * 加密向量
      */
-    private byte[] encodeViBytes = null;
+    protected byte[] encodeIVBytes = null;
 
     /**
      * localStreamCipher
@@ -54,10 +54,10 @@ public abstract class LocalStreamCipher extends AbstractCipher {
         int offset = 0;
         if (!decodeInit) {
             //parameter
-            byte[] viBytes = new byte[getVILength()];
-            System.arraycopy(secretBytes, 0, viBytes, 0, offset = getVILength());
+            byte[] ivBytes = new byte[getVILength()];
+            System.arraycopy(secretBytes, 0, ivBytes, 0, offset = getVILength());
 
-            CipherParameters viParameter = new ParametersWithIV(new KeyParameter(getKey()), viBytes);
+            CipherParameters viParameter = new ParametersWithIV(new KeyParameter(getKey()), ivBytes);
 
             //init
             decodeStreamCipher.init(false, viParameter);
@@ -71,15 +71,16 @@ public abstract class LocalStreamCipher extends AbstractCipher {
 
     @Override
     public byte[] encodeBytes(byte[] originBytes) {
-        byte[] target = encodeViBytes == null ? new byte[getVILength() + originBytes.length] : new byte[originBytes.length];
+        byte[] target;
+        target = encodeIVBytes == null ? new byte[getVILength() + originBytes.length] : new byte[originBytes.length];
         int outOff = 0;
 
-        if (encodeViBytes == null) {
-            encodeViBytes = getRandomBytes(getVILength());
-            System.arraycopy(encodeViBytes, 0, target, 0, encodeViBytes.length);
+        if (encodeIVBytes == null) {
+            encodeIVBytes = getRandomBytes(getVILength());
+            System.arraycopy(encodeIVBytes, 0, target, 0, encodeIVBytes.length);
             outOff = getVILength();
 
-            CipherParameters viParameter = new ParametersWithIV(new KeyParameter(getKey()), encodeViBytes);
+            CipherParameters viParameter = new ParametersWithIV(new KeyParameter(getKey()), encodeIVBytes);
             encodeStreamCipher.init(true, viParameter);
         }
 
@@ -102,6 +103,6 @@ public abstract class LocalStreamCipher extends AbstractCipher {
     public abstract int getVILength();
 
     public byte[] getEncodeViBytes() {
-        return encodeViBytes;
+        return encodeIVBytes;
     }
 }

@@ -4,6 +4,7 @@ import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
 import com.zkdcloud.shadowsocks.client.socks5.context.RepType;
 import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
+import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
 import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
@@ -16,7 +17,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.AsciiString;
 import io.netty.util.ReferenceCountUtil;
-import org.bouncycastle.crypto.engines.AESEngine;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import sun.net.util.IPAddressUtil;
@@ -26,10 +26,13 @@ import java.util.concurrent.TimeUnit;
 
 public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<ByteBuf> {
     /**
+     * one thread eventLoopGroup
+     */
+    public static NioEventLoopGroup singleEventLoopGroup = new NioEventLoopGroup();
+    /**
      * static logger
      */
     private static Logger logger = LoggerFactory.getLogger(Socks5ConnectOperatorInbound.class);
-
     /**
      * remote connection
      */
@@ -42,10 +45,6 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
      * remote bootstrap
      */
     private Bootstrap remoteBootstrap;
-    /**
-     * one thread eventLoopGroup
-     */
-    public static NioEventLoopGroup singleEventLoopGroup = new NioEventLoopGroup();
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -62,7 +61,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
     /**
      * build remote connection
      */
-    private void buildConnect(){
+    private void buildConnect() {
         remoteBootstrap = new Bootstrap();
 
         remoteBootstrap.group(singleEventLoopGroup)
@@ -72,13 +71,14 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                 .handler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
+                        Long timeOutSeconds = ShadowsocksConfigUtil.getClientConfigInstance().getTimeout();
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(0, 0, 30,TimeUnit.SECONDS))
+                                .addLast(new IdleStateHandler(0, 0, timeOutSeconds, TimeUnit.SECONDS))
                                 .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                     @Override
                                     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
                                         AbstractCipher cipher = clientChannel.attr(ContextConstant.CIPHER).get();
-                                        if(cipher == null){
+                                        if (cipher == null) {
                                             ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
                                             cipher = new Aes128CfbCipher(clientConfig.getPassword());
                                         }
@@ -87,7 +87,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
                                     @Override
                                     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                        logger.debug("remoteId {} is inactive",ctx.channel().id());
+                                        logger.debug("remoteId {} is inactive", ctx.channel().id());
                                         closeChannel();
                                     }
 
@@ -109,7 +109,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                 sendAcc();
 
                 if (logger.isDebugEnabled()) {
-                    logger.debug("-------------------> {} remote channel {} is connected",ClientContextConstant.connectionTimes++,proxyChannel.id());
+                    logger.debug("-------------------> remote channel {} is connected", proxyChannel.id());
                 }
             } else {
                 logger.error("channelId: {}, cause : {}", future.channel().id(), future.cause().getMessage());
@@ -148,7 +148,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
 
         repMessage.writeByte(0x01);// ip type
         repMessage.writeInt(SocksIpUtils.ip4ToInt(((InetSocketAddress) proxyChannel.remoteAddress()).getHostName()));// ipv4 addr
-        repMessage.writeShort(3030);// ip port
+        repMessage.writeShort(((InetSocketAddress) proxyChannel.remoteAddress()).getPort());// ip port
 
         clientChannel.writeAndFlush(repMessage);
     }
@@ -156,21 +156,21 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
     /**
      * init about Attr
      */
-    private void initAttribute(ChannelHandlerContext ctx){
+    private void initAttribute(ChannelHandlerContext ctx) {
         clientChannel = ctx.channel();
 
-        // inti clientConfig
+        // init cipher
         ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
-        clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).setIfAbsent(clientConfig);
-        clientChannel.attr(ContextConstant.CIPHER).setIfAbsent(new Aes128CfbCipher(clientConfig.getPassword()));
+        clientChannel.attr(ContextConstant.CIPHER).setIfAbsent(CipherProvider.getByName(clientConfig.getMethod(), clientConfig.getPassword()));
     }
+
     /**
      * get proxyAddress from 'config.json'
      *
      * @return inetSocketAddress
      */
     private InetSocketAddress getProxyAddress() {
-        ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
+        ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
         return new InetSocketAddress(clientConfig.getServer(), clientConfig.getServer_port());
     }
 

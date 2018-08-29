@@ -37,5 +37,9 @@ public class ContextConstant {
          * server.json of server
          */
         String SERVER_CONFIG_FILE = "server.json";
+        /**
+         * default timeOut seconds
+         */
+        Long DEFAULT_TIMEOUT_TIME = 300L;
     }
 }

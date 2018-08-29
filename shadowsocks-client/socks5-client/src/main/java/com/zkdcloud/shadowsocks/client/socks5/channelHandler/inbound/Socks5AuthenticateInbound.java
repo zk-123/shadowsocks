@@ -33,8 +33,8 @@ public class Socks5AuthenticateInbound extends SimpleChannelInboundHandler<ByteB
         ByteBuf result = ctx.alloc().buffer().writeByte(ClientContextConstant.SOCKS5_VERSION).writeByte(Socks5Method.NO_APPROVE.getValue());
         ctx.channel().writeAndFlush(result);
         ctx.pipeline().remove(this);
-        if(logger.isDebugEnabled()){
-            logger.info("channel :{} sock5已握手",ctx.channel().id());
+        if (logger.isDebugEnabled()) {
+            logger.info("channel :{} sock5已握手", ctx.channel().id());
         }
     }
 
@@ -44,12 +44,12 @@ public class Socks5AuthenticateInbound extends SimpleChannelInboundHandler<ByteB
      * @param msg socks5 msg
      * @return yes is true/ no is false
      */
-    private boolean isSupport(ByteBuf msg){
+    private boolean isSupport(ByteBuf msg) {
         boolean isSupport = false;
 
         byte nmethods = msg.readByte();
         for (int i = 0; i < nmethods; i++) {
-            if(Socks5Method.NO_APPROVE.getValue() == msg.readByte()){
+            if (Socks5Method.NO_APPROVE.getValue() == msg.readByte()) {
                 isSupport = true;
             }
         }

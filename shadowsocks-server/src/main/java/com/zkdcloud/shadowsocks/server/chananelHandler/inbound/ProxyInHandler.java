@@ -6,7 +6,6 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
@@ -82,8 +81,8 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
                                         @Override
                                         public void channelInactive(ChannelHandlerContext ctx) throws Exception {
-                                            if(logger.isDebugEnabled()){
-                                                logger.debug("{}:{} channelId:{} is inactive",remoteAddress.getHostName(),remoteAddress.getPort(),remoteChannel.id());
+                                            if (logger.isDebugEnabled()) {
+                                                logger.debug("{}:{} channelId:{} is inactive", remoteAddress.getHostName(), remoteAddress.getPort(), remoteChannel.id());
                                             }
                                             closeChannel();
                                         }
@@ -151,7 +150,7 @@ public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
             }
             clientBuffs.clear();
 
-            if(logger.isDebugEnabled()){
+            if (logger.isDebugEnabled()) {
                 logger.debug("channel id {},remote channel write {} bytes", remoteChannel.id().toString(), willWriteMsg.readableBytes());
             }
             remoteChannel.writeAndFlush(willWriteMsg);

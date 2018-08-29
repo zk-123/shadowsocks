@@ -1,7 +1,6 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
-import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;
@@ -26,9 +25,9 @@ public class DecodeCipherStreamInHandler extends MessageToMessageDecoder<ByteBuf
 
         msg.clear().writeBytes(realBytes);
         // get Ip
-        if(ctx.channel().attr(REMOTE_INET_SOCKET_ADDRESS).get() == null){
+        if (ctx.channel().attr(REMOTE_INET_SOCKET_ADDRESS).get() == null) {
             InetSocketAddress inetSocketAddress = ShadowsocksUtils.getIp(msg);
-            if(inetSocketAddress == null){
+            if (inetSocketAddress == null) {
                 ctx.channel().close();
                 return;
             }

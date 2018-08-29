@@ -74,7 +74,7 @@ public class Socks5AnalysisInbound extends SimpleChannelInboundHandler<ByteBuf> 
      * @param value the value ( byte value)
      * @return cmdType
      */
-    private CmdType getTypeByValue(byte value){
+    private CmdType getTypeByValue(byte value) {
         CmdType[] cmdTypes = CmdType.values();
         for (CmdType cmdType : cmdTypes) {
             if (cmdType.getValue() == value) {

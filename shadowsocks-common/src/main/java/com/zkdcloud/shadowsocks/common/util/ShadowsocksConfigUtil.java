@@ -12,8 +12,7 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.zkdcloud.shadowsocks.common.context.ContextConstant.ConfigProperties.CLIENT_CONFIG_FILE;
-import static com.zkdcloud.shadowsocks.common.context.ContextConstant.ConfigProperties.SERVER_CONFIG_FILE;
+import static com.zkdcloud.shadowsocks.common.context.ContextConstant.ConfigProperties.*;
 
 /**
  * client and server config
@@ -44,6 +43,12 @@ public class ShadowsocksConfigUtil {
     public static ClientConfig getClientConfigInstance() {
         if (clientConfig == null) {
             clientConfig = getClientConfig();
+
+            //validate timeout
+            if (clientConfig.getTimeout() == null || clientConfig.getTimeout() <= 0) {
+                logger.warn("timeout is set invalid, set default :{}", DEFAULT_TIMEOUT_TIME);
+                clientConfig.setTimeout(DEFAULT_TIMEOUT_TIME);
+            }
         }
         return clientConfig;
     }
@@ -56,6 +61,12 @@ public class ShadowsocksConfigUtil {
     public static ServerConfig getServerConfigInstance() {
         if (serverConfig == null) {
             serverConfig = getServerConfig();
+
+            //validate timeout
+            if (serverConfig.getTimeout() == null || serverConfig.getTimeout() <= 0) {
+                logger.warn("timeout is set invalid, set default :{}", DEFAULT_TIMEOUT_TIME);
+                serverConfig.setTimeout(DEFAULT_TIMEOUT_TIME);
+            }
         }
         return serverConfig;
     }
