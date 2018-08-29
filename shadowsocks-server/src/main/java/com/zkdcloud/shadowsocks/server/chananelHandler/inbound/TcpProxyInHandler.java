@@ -20,16 +20,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * description
+ * proxy handler
  *
  * @author zk
  * @since 2018/8/14
  */
-public class ProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
+public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     /**
      * static logger
      */
-    private static Logger logger = LoggerFactory.getLogger(ProxyInHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(TcpProxyInHandler.class);
     /**
      * bootstrap
      */

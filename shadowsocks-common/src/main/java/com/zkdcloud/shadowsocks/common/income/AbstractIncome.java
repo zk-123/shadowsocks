@@ -1,11 +1,16 @@
 package com.zkdcloud.shadowsocks.common.income;
 
 /**
- * 程序启动入口
+ * start proxy
  *
  * @author zk
  * @since 2018/8/11
  */
 public abstract class AbstractIncome {
+    /**
+     * start server or client
+     *
+     * @throws InterruptedException ex
+     */
     public abstract void startup() throws InterruptedException;
 }

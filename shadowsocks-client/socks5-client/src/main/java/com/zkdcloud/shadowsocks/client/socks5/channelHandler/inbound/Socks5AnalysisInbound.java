@@ -60,12 +60,12 @@ public class Socks5AnalysisInbound extends SimpleChannelInboundHandler<ByteBuf> 
         //get query remote address
         InetSocketAddress queryAddress = ShadowsocksUtils.getIp(msg);
         ctx.channel().attr(ClientContextConstant.QUERY_ADDRESS).setIfAbsent(queryAddress);
-        if (logger.isDebugEnabled()) {
-            logger.debug("channelId:{} queryHost: {} queryPort: {}", ctx.channel().id(), queryAddress.getHostName(), queryAddress.getPort());
+        if(logger.isDebugEnabled()){
+            logger.debug("connect {}:{}", queryAddress.getHostName(), queryAddress.getPort());
         }
 
         //add sock5 connect operator
-        ctx.pipeline().addLast(new Socks5ConnectOperatorInbound());
+        ctx.pipeline().addLast("connect",new Socks5ConnectOperatorInbound());
     }
 
     /**

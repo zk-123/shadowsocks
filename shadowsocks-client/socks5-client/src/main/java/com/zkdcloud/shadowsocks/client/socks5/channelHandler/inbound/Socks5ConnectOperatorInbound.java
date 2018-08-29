@@ -1,5 +1,6 @@
 package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
+import com.zkdcloud.shadowsocks.client.socks5.channelHandler.outbound.Socks5DecryptOutbound;
 import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
 import com.zkdcloud.shadowsocks.client.socks5.context.RepType;
 import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
@@ -54,7 +55,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
         }
 
         if (msg != null && msg.isReadable()) {
-            proxyChannel.writeAndFlush(getCryptoMessage(msg));
+            proxyChannel.writeAndFlush(getCryptMessage(msg));
         }
     }
 
@@ -77,12 +78,10 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                                 .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                     @Override
                                     protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
-                                        AbstractCipher cipher = clientChannel.attr(ContextConstant.CIPHER).get();
-                                        if (cipher == null) {
-                                            ClientConfig clientConfig = clientChannel.attr(ClientContextConstant.CLIENT_CONFIG).get();
-                                            cipher = new Aes128CfbCipher(clientConfig.getPassword());
+                                        if(clientChannel.pipeline().get(Socks5DecryptOutbound.class) == null){
+                                            clientChannel.pipeline().addLast("decryptRemote",new Socks5DecryptOutbound());
                                         }
-                                        clientChannel.writeAndFlush(ctx.alloc().heapBuffer().writeBytes(cipher.decodeBytes(msg)));
+                                        clientChannel.writeAndFlush(msg.retain());
                                     }
 
                                     @Override
@@ -107,7 +106,6 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
                 proxyChannel = future.channel();
                 //send the connection is build
                 sendAcc();
-
                 if (logger.isDebugEnabled()) {
                     logger.debug("-------------------> remote channel {} is connected", proxyChannel.id());
                 }
@@ -180,7 +178,7 @@ public class Socks5ConnectOperatorInbound extends SimpleChannelInboundHandler<By
      * @param message message
      * @return byteBuf
      */
-    private ByteBuf getCryptoMessage(ByteBuf message) {
+    private ByteBuf getCryptMessage(ByteBuf message) {
         try {
             ByteBuf willEncodeMessage = clientChannel.alloc().heapBuffer();
 

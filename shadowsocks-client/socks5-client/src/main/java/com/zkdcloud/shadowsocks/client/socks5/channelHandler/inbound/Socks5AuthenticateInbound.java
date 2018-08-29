@@ -34,7 +34,7 @@ public class Socks5AuthenticateInbound extends SimpleChannelInboundHandler<ByteB
         ctx.channel().writeAndFlush(result);
         ctx.pipeline().remove(this);
         if (logger.isDebugEnabled()) {
-            logger.info("channel :{} sock5已握手", ctx.channel().id());
+            logger.debug("channel :{} sock5已握手", ctx.channel().id());
         }
     }
 

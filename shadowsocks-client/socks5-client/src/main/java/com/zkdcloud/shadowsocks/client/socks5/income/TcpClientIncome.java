@@ -46,18 +46,18 @@ public class TcpClientIncome extends AbstractIncome {
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast(new IdleStateHandler(0, 0, 3, TimeUnit.MINUTES) {
+                        ch.pipeline().addLast("idle",new IdleStateHandler(0, 0, 3, TimeUnit.MINUTES) {
                             @Override
                             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
                                 logger.error("channelId: {} has exception, cause : {}", ctx.channel().id(), cause.getMessage());
                                 ctx.channel().close();
                             }
                         })
-                                .addLast(new Socks5AuthenticateInbound())
-                                .addLast(new Socks5AnalysisInbound());
+                                .addLast("authenticate",new Socks5AuthenticateInbound())
+                                .addLast("accept",new Socks5AnalysisInbound());
                     }
                 }).bind(1081).sync();
-        channelFuture.channel();
+        logger.info("shadowsocks tcp client start at {}",port);
         channelFuture.channel().closeFuture().sync();
     }
 }

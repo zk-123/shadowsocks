@@ -36,7 +36,7 @@ public class ClientConfig {
      */
     private String remarks;
     /**
-     * timeout mills
+     * timeout seconds
      */
     private Long timeout;
 
