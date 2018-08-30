@@ -14,5 +14,6 @@
 
     <modules>
         <module>socks5-client</module>
+        <module>http-socks5-client</module>
     </modules>
 </project>

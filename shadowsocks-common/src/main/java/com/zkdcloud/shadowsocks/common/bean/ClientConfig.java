@@ -16,6 +16,10 @@ public class ClientConfig {
      */
     private short server_port;
     /**
+     * local port
+     */
+    private short local_port;
+    /**
      * password
      */
     private String password;
@@ -54,6 +58,14 @@ public class ClientConfig {
 
     public void setServer_port(short server_port) {
         this.server_port = server_port;
+    }
+
+    public short getLocal_port() {
+        return local_port;
+    }
+
+    public void setLocal_port(short local_port) {
+        this.local_port = local_port;
     }
 
     public String getPassword() {

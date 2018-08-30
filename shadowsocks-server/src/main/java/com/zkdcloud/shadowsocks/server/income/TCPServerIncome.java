@@ -63,7 +63,7 @@ public class TCPServerIncome extends AbstractIncome {
         InetSocketAddress localAddress = new InetSocketAddress(serverConfig.getLocal_address(), serverConfig.getLocal_port());
 
         ChannelFuture channelFuture = serverBootstrap.bind(localAddress).sync();
-        logger.info("shadowsocks tcp server start at {}:{}", localAddress.getHostName(), localAddress.getPort());
+        logger.info("shadowsocks tcp server running at {}:{}", localAddress.getHostName(), localAddress.getPort());
         channelFuture.channel().closeFuture().sync();
     }
 }
