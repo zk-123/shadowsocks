@@ -3,7 +3,7 @@ package com.zkdcloud.shadowsocks.server.income;
 import com.zkdcloud.shadowsocks.common.bean.ServerConfig;
 import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
-import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptoInitInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.outbound.EncodeCipherStreamOutHandler;
@@ -53,7 +53,7 @@ public class TCPServerIncome extends AbstractIncome {
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
                                 .addLast(new IdleStateHandler(0, 0, 10, TimeUnit.SECONDS))
-                                .addLast(new CryptoInitInHandler())
+                                .addLast(new CryptInitInHandler())
                                 .addLast(new DecodeCipherStreamInHandler())
                                 .addLast(new TcpProxyInHandler())
                                 .addLast(new EncodeCipherStreamOutHandler());

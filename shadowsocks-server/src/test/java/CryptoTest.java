@@ -3,7 +3,7 @@ import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
 import com.zkdcloud.shadowsocks.common.cipher.stream.Rc4Md5Cipher;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
-import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptoInitInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
 import io.netty.buffer.ByteBuf;
@@ -112,7 +112,7 @@ public class CryptoTest {
 
     @Test
     public void testEmbeddedChannel() {
-        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new CryptoInitInHandler(), new DecodeCipherStreamInHandler(), new TcpProxyInHandler());
+        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new CryptInitInHandler(), new DecodeCipherStreamInHandler(), new TcpProxyInHandler());
 
         ByteBuf byteBuf = Unpooled.buffer().writeBytes(orginByte);
         embeddedChannel.writeInbound(byteBuf);

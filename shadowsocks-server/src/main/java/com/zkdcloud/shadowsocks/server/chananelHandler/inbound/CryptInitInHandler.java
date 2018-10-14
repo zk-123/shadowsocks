@@ -7,6 +7,7 @@ import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.codec.MessageToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,27 +15,30 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 /**
- * init crypto
+ * init crypt
  *
  * @author zk
  * @since 2018/8/11
  */
-public class CryptoInitInHandler extends MessageToMessageDecoder<ByteBuf> {
+public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
     /**
      * static logger
      */
-    private static Logger logger = LoggerFactory.getLogger(CryptoInitInHandler.class);
+    private static Logger logger = LoggerFactory.getLogger(CryptInitInHandler.class);
 
-    protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
+    @Override
+    public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
         if (ctx.channel().attr(ContextConstant.CIPHER).get() == null) {
             initAttribute(ctx);
         }
-        out.add(ctx.alloc().heapBuffer(msg.readableBytes()).writeBytes(msg));
+
+        super.channelRead(ctx, msg);
     }
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage(), cause);
+        ctx.channel().close();
     }
 
     /**

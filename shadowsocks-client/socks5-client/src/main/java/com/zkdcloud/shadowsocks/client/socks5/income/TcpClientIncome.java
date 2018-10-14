@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.client.socks5.income;
 
-import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5AnalysisInbound;
-import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5AuthenticateInbound;
+import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.CryptInitInHandler;
+import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5ServerDoorHandler;
 import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
 import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
@@ -13,7 +13,6 @@ import io.netty.handler.timeout.IdleStateHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -31,11 +30,11 @@ public class TcpClientIncome extends AbstractIncome {
     /**
      * boosLoopGroup
      */
-    private EventLoopGroup bossLoopGroup = new NioEventLoopGroup();
+    private EventLoopGroup bossLoopGroup = new NioEventLoopGroup(1);
     /**
      * worksLoopGroup
      */
-    private EventLoopGroup worksLoopGroup = new NioEventLoopGroup();
+    private EventLoopGroup worksLoopGroup = new NioEventLoopGroup(1);
     /**
      * serverBootstrap
      */
@@ -49,15 +48,16 @@ public class TcpClientIncome extends AbstractIncome {
                 .childHandler(new ChannelInitializer<Channel>() {
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
-                        ch.pipeline().addLast("idle", new IdleStateHandler(0, 0, 3, TimeUnit.MINUTES) {
-                            @Override
-                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                                logger.error("channelId: {} has exception, cause : {}", ctx.channel().id(), cause.getMessage());
-                                ctx.channel().close();
-                            }
-                        })
-                                .addLast("authenticate", new Socks5AuthenticateInbound())
-                                .addLast("accept", new Socks5AnalysisInbound());
+                        ch.pipeline()
+                                .addLast("idle", new IdleStateHandler(0, 0, 3, TimeUnit.MINUTES) {
+                                    @Override
+                                    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                                        logger.error("channelId: {} has exception, cause : {}", ctx.channel().id(), cause.getMessage());
+                                        ctx.channel().close();
+                                    }
+                                })
+                                .addLast("crypt-init",new CryptInitInHandler())
+                                .addLast("socks5-door", new Socks5ServerDoorHandler());
                     }
                 });
         //port
