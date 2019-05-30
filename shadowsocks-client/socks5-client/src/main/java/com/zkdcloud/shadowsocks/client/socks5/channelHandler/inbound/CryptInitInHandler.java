@@ -1,19 +1,14 @@
 package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
-import com.zkdcloud.shadowsocks.common.bean.ServerConfig;
+import com.zkdcloud.shadowsocks.common.config.ClientConfig;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
 import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
-import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.MessageToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * init crypto

@@ -1,8 +1,7 @@
 package com.zkdcloud.shadowsocks.common.util;
 
 import com.alibaba.fastjson.JSONReader;
-import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
-import com.zkdcloud.shadowsocks.common.bean.ServerConfig;
+import com.zkdcloud.shadowsocks.common.config.ClientConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,10 +29,6 @@ public class ShadowsocksConfigUtil {
      * clientConfig
      */
     private static ClientConfig clientConfig;
-    /**
-     * serverConfig
-     */
-    private static ServerConfig serverConfig;
 
     /**
      * 获取clientConfig
@@ -53,23 +48,7 @@ public class ShadowsocksConfigUtil {
         return clientConfig;
     }
 
-    /**
-     * 获取serverConfig
-     *
-     * @return serverConfig
-     */
-    public static ServerConfig getServerConfigInstance() {
-        if (serverConfig == null) {
-            serverConfig = getServerConfig();
 
-            //validate timeout
-            if (serverConfig.getTimeout() == null || serverConfig.getTimeout() <= 0) {
-                logger.warn("timeout is set invalid, set default :{}", DEFAULT_TIMEOUT_TIME);
-                serverConfig.setTimeout(DEFAULT_TIMEOUT_TIME);
-            }
-        }
-        return serverConfig;
-    }
 
     /**
      * 获取clientConfig
@@ -87,21 +66,7 @@ public class ShadowsocksConfigUtil {
         return clientConfig;
     }
 
-    /**
-     * get ServerConfig
-     *
-     * @return ServerConfig
-     */
-    private synchronized static ServerConfig getServerConfig() {
-        ServerConfig serverConfig = null;
-        try {
-            Path path = Paths.get(ClassLoader.getSystemResource(SERVER_CONFIG_FILE).toURI());
-            serverConfig = new JSONReader(new FileReader(path.toFile())).readObject(ServerConfig.class);
-        } catch (URISyntaxException | FileNotFoundException e) {
-            logger.error(e.getMessage(), e);
-        }
-        return serverConfig;
-    }
+
 
     /**
      * 重新读取clientConfig

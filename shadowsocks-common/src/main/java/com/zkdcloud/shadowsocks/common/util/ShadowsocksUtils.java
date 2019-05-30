@@ -1,6 +1,7 @@
 package com.zkdcloud.shadowsocks.common.util;
 
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.handler.codec.socks.SocksAddressType;
 import io.netty.util.internal.StringUtil;
 
@@ -71,7 +72,7 @@ public class ShadowsocksUtils {
                 break;
             }
             case IPv6: {
-                host = SocksIpUtils.ipv6toStr(msg.readBytes(16).array());
+                host = SocksIpUtils.ipv6toStr(ByteBufUtil.getBytes(msg.readBytes(16)));
                 port = msg.readUnsignedShort();
                 break;
             }

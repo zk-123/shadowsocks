@@ -3,7 +3,7 @@ package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.outbound.Socks5DecryptOutbound;
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.outbound.Socks5ServerEncoder;
 import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
-import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
+import com.zkdcloud.shadowsocks.common.config.ClientConfig;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;

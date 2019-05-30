@@ -1,18 +1,15 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.common.bean.ServerConfig;
+import com.zkdcloud.shadowsocks.server.config.ServerConfig;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
 import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
-import io.netty.buffer.ByteBuf;
+import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.codec.MessageToMessageDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 /**
  * init crypt
@@ -47,15 +44,11 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
      * @param ctx client context
      */
     private void initAttribute(ChannelHandlerContext ctx) {
-        //server config
-        ServerConfig serverConfig = ShadowsocksConfigUtil.getServerConfigInstance();
-        ctx.channel().attr(ContextConstant.SERVER_CONFIG).setIfAbsent(serverConfig);
-
         // cipher
-        AbstractCipher cipher = CipherProvider.getByName(serverConfig.getMethod(), serverConfig.getPassword());
+        AbstractCipher cipher = CipherProvider.getByName(ServerConfig.serverConfig.getMethod(), ServerConfig.serverConfig.getPassword());
         if (cipher == null) {
             ctx.channel().close();
-            throw new IllegalArgumentException("un support server method: " + serverConfig.getMethod());
+            throw new IllegalArgumentException("un support server method: " + ServerConfig.serverConfig.getMethod());
         } else {
             ctx.channel().attr(ContextConstant.CIPHER).set(cipher);
         }

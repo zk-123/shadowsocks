@@ -1,4 +1,4 @@
-package com.zkdcloud.shadowsocks.common.bean;
+package com.zkdcloud.shadowsocks.server.config;
 
 /**
  * server config
@@ -7,6 +7,7 @@ package com.zkdcloud.shadowsocks.common.bean;
  * @since 2018/8/28
  */
 public class ServerConfig {
+    public static ServerConfig serverConfig = new ServerConfig();
     /**
      * localAddress
      */

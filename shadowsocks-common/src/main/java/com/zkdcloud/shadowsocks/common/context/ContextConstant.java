@@ -1,7 +1,6 @@
 package com.zkdcloud.shadowsocks.common.context;
 
-import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
-import com.zkdcloud.shadowsocks.common.bean.ServerConfig;
+import com.zkdcloud.shadowsocks.common.config.ClientConfig;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import io.netty.util.AttributeKey;
 
@@ -16,10 +15,6 @@ public class ContextConstant {
      * cipher
      */
     public static AttributeKey<AbstractCipher> CIPHER = AttributeKey.valueOf("cipher");
-    /**
-     * serverConfig
-     */
-    public static AttributeKey<ServerConfig> SERVER_CONFIG = AttributeKey.valueOf("serverConfig");
     /**
      * clientConfig
      */

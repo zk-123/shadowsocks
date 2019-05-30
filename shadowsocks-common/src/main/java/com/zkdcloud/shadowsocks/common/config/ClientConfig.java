@@ -1,4 +1,4 @@
-package com.zkdcloud.shadowsocks.common.bean;
+package com.zkdcloud.shadowsocks.common.config;
 
 /**
  * client config (usually is standard shadowsocks 'config.json')

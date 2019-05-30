@@ -2,7 +2,7 @@ package com.zkdcloud.shadowsocks.client.socks5.income;
 
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5ServerDoorHandler;
-import com.zkdcloud.shadowsocks.common.bean.ClientConfig;
+import com.zkdcloud.shadowsocks.common.config.ClientConfig;
 import com.zkdcloud.shadowsocks.common.income.AbstractIncome;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
 import io.netty.bootstrap.ServerBootstrap;
