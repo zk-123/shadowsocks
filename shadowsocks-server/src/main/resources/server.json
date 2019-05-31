@@ -1,7 +1,0 @@
-{
-  "local_address": "127.0.0.1",
-  "local_port": 8989,
-  "password": "123456",
-  "method": "salsa20",
-  "timeout": 300
-}

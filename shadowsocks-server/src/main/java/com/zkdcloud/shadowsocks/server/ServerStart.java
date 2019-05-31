@@ -48,6 +48,7 @@ public class ServerStart {
     private static ServerBootstrap serverBootstrap = new ServerBootstrap();
 
     public static void main(String[] args) throws InterruptedException {
+        initCliArgs(args);
         startupTCP();
     }
 
@@ -57,7 +58,7 @@ public class ServerStart {
                 .childHandler(new ChannelInitializer<Channel>() {
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(0, 0, 1, TimeUnit.MINUTES))
+                                .addLast(new IdleStateHandler(0, 0, 30, TimeUnit.HOURS))
                                 .addLast(new CryptInitInHandler())
                                 .addLast(new DecodeCipherStreamInHandler())
                                 .addLast(new TcpProxyInHandler())
