@@ -1,12 +1,12 @@
 package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.common.config.ClientConfig;
+import com.zkdcloud.shadowsocks.client.socks5.config.ClientConfig;
+import com.zkdcloud.shadowsocks.client.socks5.config.ClientContextConstant;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
-import com.zkdcloud.shadowsocks.common.context.ContextConstant;
-import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
  * @author zk
  * @since 2018/8/11
  */
-public class CryptInitInHandler extends ChannelInboundHandlerAdapter{
+public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
     /**
      * static logger
      */
@@ -24,7 +24,7 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter{
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (ctx.channel().attr(ContextConstant.CIPHER).get() == null) {
+        if (ctx.channel().attr(ClientContextConstant.SOCKS5_CLIENT_CIPHER).get() == null) {
             initAttribute(ctx);
         }
 
@@ -43,17 +43,13 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter{
      * @param ctx client context
      */
     private void initAttribute(ChannelHandlerContext ctx) {
-        //client config
-        ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
-        ctx.channel().attr(ContextConstant.CLIENT_CONFIG).setIfAbsent(clientConfig);
-
         // cipher
-        AbstractCipher cipher = CipherProvider.getByName(clientConfig.getMethod(), clientConfig.getPassword());
+        AbstractCipher cipher = CipherProvider.getByName(ClientConfig.clientConfig.getMethod(), ClientConfig.clientConfig.getPassword());
         if (cipher == null) {
             ctx.channel().close();
-            throw new IllegalArgumentException("un support server method: " + clientConfig.getMethod());
+            throw new IllegalArgumentException("un support server method: " + ClientConfig.clientConfig.getMethod());
         } else {
-            ctx.channel().attr(ContextConstant.CIPHER).set(cipher);
+            ctx.channel().attr(ClientContextConstant.SOCKS5_CLIENT_CIPHER).set(cipher);
         }
     }
 }

@@ -1,17 +1,18 @@
-package com.zkdcloud.shadowsocks.client.socks5.context;
+package com.zkdcloud.shadowsocks.client.socks5.config;
 
+import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
 import java.net.InetSocketAddress;
 
-/**
- * description
- *
- * @author zk
- * @since 2018/8/20
- */
 public class ClientContextConstant {
+
+    /**
+     * socks5 client cipher
+     */
+    public static AttributeKey<AbstractCipher> SOCKS5_CLIENT_CIPHER = AttributeKey.valueOf("socks5 client cipher");
+
     /**
      * client first encoding flag
      */
@@ -25,5 +26,4 @@ public class ClientContextConstant {
      * 代理通道
      */
     public static AttributeKey<Channel> REMOTE_CHANNEL = AttributeKey.valueOf("remoteChannel");
-
 }

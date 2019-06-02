@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
-import com.zkdcloud.shadowsocks.server.context.ServerContextConstant;
+import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
@@ -95,7 +95,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
                                         @Override
                                         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-                                            logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
+                                            logger.error("remote channel [{}], cause:{}", ctx.channel().id(), cause.getMessage());
                                             closeRemoteChannel();
                                             closeClientChannel();
                                         }
@@ -121,7 +121,11 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                     remoteChannel = future.channel();
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("host: [{}:{}] connect success, client channelId is [{}],  remote channelId is [{}]", remoteAddress.getHostName(), remoteAddress.getPort(), clientChannel.id(), remoteChannel.id());
+                        try {
+                            logger.debug("host: [{}:{}] connect success, client channelId is [{}],  remote channelId is [{}]", remoteAddress.getHostName(), remoteAddress.getPort(), clientChannel.id(), remoteChannel.id());
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
                     }
                     clientBuffs.add(msg.retain());
                     writeAndFlushByteBufList();
@@ -197,5 +201,11 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 //todo release bytes
             }
         });
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
+        ctx.channel().close();
     }
 }

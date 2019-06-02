@@ -1,8 +1,7 @@
 package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
+import com.zkdcloud.shadowsocks.client.socks5.config.ClientContextConstant;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
-import com.zkdcloud.shadowsocks.common.context.ContextConstant;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -113,7 +112,7 @@ public class TransferFlowHandler extends SimpleChannelInboundHandler<ByteBuf> {
         try {
             ByteBuf result = clientChannel.alloc().heapBuffer();
 
-            AbstractCipher cipher = clientChannel.attr(ContextConstant.CIPHER).get();
+            AbstractCipher cipher = clientChannel.attr(ClientContextConstant.SOCKS5_CLIENT_CIPHER).get();
             byte[] originBytes = new byte[willEncodeMessage.readableBytes()];
             willEncodeMessage.readBytes(originBytes);
 

@@ -93,11 +93,11 @@ public class ServerStart {
             // address
             OPTIONS.addOption(Option.builder("d").longOpt("address").argName("ip").required(false).type(String.class).desc("address bind").build());
             // port
-            OPTIONS.addOption(Option.builder("P").longOpt("port").hasArg(true).type(Long.class).desc("port bind").build());
+            OPTIONS.addOption(Option.builder("P").longOpt("port").hasArg(true).type(Integer.class).desc("port bind").build());
             // password
             OPTIONS.addOption(Option.builder("p").longOpt("password").required().hasArg(true).type(String.class).desc("password of ssserver").build());
             // method
-            OPTIONS.addOption(Option.builder("m").longOpt("method").required().hasArg(true).type(String.class).desc("Encryption method").build());
+            OPTIONS.addOption(Option.builder("m").longOpt("method").required().hasArg(true).type(String.class).desc("encrypt method").build());
             try {
                 commandLine = commandLineParser.parse(OPTIONS, args);
             } catch (ParseException e) {
@@ -118,7 +118,7 @@ public class ServerStart {
             ServerConfig.serverConfig.setLocal_address(hostAddress);
             // port
             String portOptionValue = commandLine.getOptionValue("P");
-            short port = portOptionValue == null || "".equals(portOptionValue) ? 1080 : Short.parseShort(portOptionValue);
+            int port = portOptionValue == null || "".equals(portOptionValue) ? 1080 : Integer.parseInt(portOptionValue);
             ServerConfig.serverConfig.setLocal_port(port);
             // password
             ServerConfig.serverConfig.setPassword(commandLine.getOptionValue("p"));

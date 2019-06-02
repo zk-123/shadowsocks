@@ -2,15 +2,15 @@ package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.outbound.Socks5DecryptOutbound;
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.outbound.Socks5ServerEncoder;
-import com.zkdcloud.shadowsocks.client.socks5.context.ClientContextConstant;
-import com.zkdcloud.shadowsocks.common.config.ClientConfig;
-import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
+import com.zkdcloud.shadowsocks.client.socks5.config.ClientContextConstant;
+import com.zkdcloud.shadowsocks.client.socks5.config.ClientConfig;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.*;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.socksx.v5.*;
+import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
 import org.slf4j.Logger;
@@ -113,9 +113,8 @@ public class Socks5ServerDoorHandler extends ChannelInboundHandlerAdapter {
                     .handler(new ChannelInitializer<Channel>() {
                         @Override
                         protected void initChannel(Channel ch) throws Exception {
-                            Long timeOutSeconds = ShadowsocksConfigUtil.getClientConfigInstance().getTimeout();
                             ch.pipeline()
-                                    .addLast(new IdleStateHandler(0, 0, timeOutSeconds, TimeUnit.SECONDS))
+                                    .addLast(new IdleStateHandler(0, 0, 120, TimeUnit.SECONDS))
                                     .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
@@ -151,7 +150,7 @@ public class Socks5ServerDoorHandler extends ChannelInboundHandlerAdapter {
                     clientChannel.pipeline().addLast("socks5-transfer", new TransferFlowHandler());
 
                     if (logger.isDebugEnabled()) {
-                        logger.debug("-------------------> remote channel {} is connected", remoteChannel.id());
+                        logger.debug("host: [{}:{}] connect success, client channelId is [{}],  remote channelId is [{}]", remoteChannel.id());
                     }
                 } else {
                     logger.error("channelId: {}, cause : {}", future.channel().id(), future.cause().getMessage());
@@ -180,12 +179,20 @@ public class Socks5ServerDoorHandler extends ChannelInboundHandlerAdapter {
     }
 
     /**
-     * get proxyAddress from 'config.json'
+     * get proxyAddress from config
      *
      * @return inetSocketAddress
      */
     private InetSocketAddress getProxyAddress() {
-        ClientConfig clientConfig = ShadowsocksConfigUtil.getClientConfigInstance();
-        return new InetSocketAddress(clientConfig.getServer(), clientConfig.getServer_port());
+        return new InetSocketAddress(ClientConfig.clientConfig.getServer(),ClientConfig. clientConfig.getServer_port());
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            ctx.channel().close();
+            return;
+        }
+        super.userEventTriggered(ctx, evt);
     }
 }

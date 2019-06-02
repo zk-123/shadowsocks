@@ -3,8 +3,6 @@ package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 import com.zkdcloud.shadowsocks.server.config.ServerConfig;
 import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
-import com.zkdcloud.shadowsocks.common.context.ContextConstant;
-import com.zkdcloud.shadowsocks.common.util.ShadowsocksConfigUtil;
 import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -25,18 +23,13 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        if (ctx.channel().attr(ContextConstant.CIPHER).get() == null) {
+        if (ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get() == null) {
             initAttribute(ctx);
         }
 
         super.channelRead(ctx, msg);
     }
 
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-        logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage(), cause);
-        ctx.channel().close();
-    }
 
     /**
      * init client attribute
@@ -50,7 +43,7 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
             ctx.channel().close();
             throw new IllegalArgumentException("un support server method: " + ServerConfig.serverConfig.getMethod());
         } else {
-            ctx.channel().attr(ContextConstant.CIPHER).set(cipher);
+            ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).set(cipher);
         }
     }
 }

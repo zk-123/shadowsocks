@@ -1,4 +1,4 @@
-package com.zkdcloud.shadowsocks.common.config;
+package com.zkdcloud.shadowsocks.client.socks5.config;
 
 /**
  * client config (usually is standard shadowsocks 'config.json')
@@ -7,6 +7,7 @@ package com.zkdcloud.shadowsocks.common.config;
  * @since 2018/8/23
  */
 public class ClientConfig {
+    public static ClientConfig clientConfig = new ClientConfig();
     /**
      * server ip
      */
@@ -14,11 +15,11 @@ public class ClientConfig {
     /**
      * server port
      */
-    private short server_port;
+    private int server_port;
     /**
      * local port
      */
-    private short local_port;
+    private int local_port;
     /**
      * password
      */
@@ -52,19 +53,19 @@ public class ClientConfig {
         this.server = server;
     }
 
-    public short getServer_port() {
+    public int getServer_port() {
         return server_port;
     }
 
-    public void setServer_port(short server_port) {
+    public void setServer_port(int server_port) {
         this.server_port = server_port;
     }
 
-    public short getLocal_port() {
+    public int getLocal_port() {
         return local_port;
     }
 
-    public void setLocal_port(short local_port) {
+    public void setLocal_port(int local_port) {
         this.local_port = local_port;
     }
 

@@ -15,7 +15,7 @@ public class ServerConfig {
     /**
      * localPort
      */
-    private short local_port;
+    private int local_port;
     /**
      * password
      */
@@ -37,11 +37,11 @@ public class ServerConfig {
         this.local_address = local_address;
     }
 
-    public short getLocal_port() {
+    public int getLocal_port() {
         return local_port;
     }
 
-    public void setLocal_port(short local_port) {
+    public void setLocal_port(int local_port) {
         this.local_port = local_port;
     }
 
