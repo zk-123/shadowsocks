@@ -7,7 +7,6 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.PooledByteBufAllocator;
 import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
-import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 import io.netty.handler.timeout.IdleStateHandler;
 import io.netty.util.ReferenceCountUtil;
@@ -46,18 +45,18 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private List<ByteBuf> clientBuffs = new ArrayList<>();
 
     @Override
-    public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
+    public void handlerAdded(ChannelHandlerContext ctx) {
         if (clientChannel == null) {
             clientChannel = ctx.channel();
         }
     }
 
     @Override
-    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+    protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
         proxyMsg(ctx, msg);
     }
 
-    private void proxyMsg(ChannelHandlerContext clientCtx, ByteBuf msg) throws InterruptedException {
+    private void proxyMsg(ChannelHandlerContext clientCtx, ByteBuf msg) {
         if (bootstrap == null) {
             bootstrap = new Bootstrap();
 
@@ -67,22 +66,17 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                     .channel(NioSocketChannel.class)
                     .handler(new ChannelInitializer<Channel>() {
                         @Override
-                        protected void initChannel(Channel ch) throws Exception {
+                        protected void initChannel(Channel ch) {
                             ch.pipeline()
-                                    .addLast("timeout", new IdleStateHandler(0, 0, 30, TimeUnit.HOURS) {
-                                        @Override
-                                        protected IdleStateEvent newIdleStateEvent(IdleState state, boolean first) {
-                                            return super.newIdleStateEvent(state, first);
-                                        }
-                                    })
+                                    .addLast("timeout", new IdleStateHandler(15 * 60, 15 * 60, 0, TimeUnit.SECONDS))
                                     .addLast("transfer", new SimpleChannelInboundHandler<ByteBuf>() {
                                         @Override
-                                        protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) throws Exception {
+                                        protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
                                             clientCtx.channel().writeAndFlush(msg.retain());
                                         }
 
                                         @Override
-                                        public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+                                        public void channelInactive(ChannelHandlerContext ctx) {
                                             if (clientChannel != null && clientChannel.isOpen()) {
                                                 reconnectRemote();
                                             } else {
@@ -94,7 +88,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                                         }
 
                                         @Override
-                                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+                                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
                                             logger.error("remote channel [{}], cause:{}", ctx.channel().id(), cause.getMessage());
                                             closeRemoteChannel();
                                             closeClientChannel();
@@ -104,7 +98,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                                         public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
                                             if (evt instanceof IdleStateEvent) {
                                                 if (logger.isDebugEnabled()) {
-                                                    logger.debug("[{}] [{}] state:{} happened", remoteChannel.id(), remoteAddress.toString(), evt.toString());
+                                                    logger.debug("remote [{}] [{}] state:{} happened", remoteChannel.id(), remoteAddress.toString(), ((IdleStateEvent) evt).state().name());
                                                 }
                                                 closeClientChannel();
                                                 closeRemoteChannel();
@@ -145,6 +139,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
         if (clientChannel != null) {
             clientChannel.close();
         }
+        dropBufList();
     }
 
     private void closeRemoteChannel() {
@@ -154,7 +149,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     }
 
     @Override
-    public void channelInactive(ChannelHandlerContext ctx) throws Exception {
+    public void channelInactive(ChannelHandlerContext ctx){
         if (logger.isDebugEnabled()) {
             logger.debug("client [{}] is inactive", ctx.channel().id());
         }
@@ -183,6 +178,17 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     }
 
     /**
+     * releaseBufList
+     */
+    private void dropBufList(){
+        if(!clientBuffs.isEmpty()){
+            for (ByteBuf clientBuff : clientBuffs) {
+                ReferenceCountUtil.release(clientBuff.retain(clientBuff.refCnt()));
+            }
+        }
+    }
+
+    /**
      * reconnect remote
      */
     private void reconnectRemote() {
@@ -198,7 +204,6 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 logger.error(remoteAddress.getHostName() + ":" + remoteAddress.getPort() + " reconnection fail");
                 closeClientChannel();
                 closeRemoteChannel();
-                //todo release bytes
             }
         });
     }
@@ -207,5 +212,18 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
         ctx.channel().close();
+    }
+
+    @Override
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
+        if (evt instanceof IdleStateEvent) {
+            if (logger.isDebugEnabled()) {
+                logger.debug("client [{}] idleStateEvent happened [{}]", ctx.channel().id(), ((IdleStateEvent) evt).state().name());
+            }
+            closeClientChannel();
+            closeRemoteChannel();
+            return;
+        }
+        super.userEventTriggered(ctx, evt);
     }
 }

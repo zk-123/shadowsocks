@@ -37,7 +37,7 @@ public class ServerStart {
     /**
      * boosLoopGroup
      */
-    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup();
+    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getBossThreadNumber());
     /**
      * worksLoopGroup
      */
@@ -58,15 +58,15 @@ public class ServerStart {
                 .childHandler(new ChannelInitializer<Channel>() {
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(0, 0, 30, TimeUnit.HOURS))
+                                .addLast(new IdleStateHandler(15 * 60, 15 * 60, 0, TimeUnit.SECONDS))
                                 .addLast(new CryptInitInHandler())
                                 .addLast(new DecodeCipherStreamInHandler())
                                 .addLast(new TcpProxyInHandler())
                                 .addLast(new EncodeCipherStreamOutHandler());
                     }
                 });
-        String localIp = ServerConfig.serverConfig.getLocal_address();
-        int localPort = ServerConfig.serverConfig.getLocal_port();
+        String localIp = ServerConfig.serverConfig.getLocalAddress();
+        int localPort = ServerConfig.serverConfig.getLocalPort();
 
         InetSocketAddress localAddress = "0.0.0.0".equals(localIp) || "::0".equals(localIp) ? new InetSocketAddress(localPort) : new InetSocketAddress(localIp, localPort);
 
@@ -98,6 +98,23 @@ public class ServerStart {
             OPTIONS.addOption(Option.builder("p").longOpt("password").required().hasArg(true).type(String.class).desc("password of ssserver").build());
             // method
             OPTIONS.addOption(Option.builder("m").longOpt("method").required().hasArg(true).type(String.class).desc("encrypt method").build());
+
+            // number of boss thread
+            OPTIONS.addOption(Option.builder("bn").longOpt("boss_number").hasArg(true).type(Integer.class).desc("boss thread number").build());
+            // number of workers thread
+            OPTIONS.addOption(Option.builder("wn").longOpt("workers_number").hasArg(true).type(Integer.class).desc("workers thread number").build());
+            // client readIdle time(second)
+            OPTIONS.addOption(Option.builder("cri").longOpt("client_read_idle").hasArg(true).type(Long.class).desc("client readIdle time(second)").build());
+            // client writeIdle time(second)
+            OPTIONS.addOption(Option.builder("cwi").longOpt("client_write_idle").hasArg(true).type(Long.class).desc("client writeIdle time(second)").build());
+            // client allIdle time(second)
+            OPTIONS.addOption(Option.builder("cai").longOpt("client_all_idle").hasArg(true).type(Long.class).desc("client allIdle time(second)").build());
+            // remote readIdle time(second)
+            OPTIONS.addOption(Option.builder("rri").longOpt("remote_read_idle").hasArg(true).type(Long.class).desc("remote readIdle time(second)").build());
+            // remote writeIdle time(second)
+            OPTIONS.addOption(Option.builder("rwi").longOpt("remote_write_idle").hasArg(true).type(Long.class).desc("remote writeIdle time(second)").build());
+            // remote allIdle time(second)
+            OPTIONS.addOption(Option.builder("rai").longOpt("remote_all_idle").hasArg(true).type(Long.class).desc("remote allIdle time(second)").build());
             try {
                 commandLine = commandLineParser.parse(OPTIONS, args);
             } catch (ParseException e) {
@@ -115,15 +132,40 @@ public class ServerStart {
 
             // address
             String hostAddress = commandLine.getOptionValue("h") == null || "".equals(commandLine.getOptionValue("h")) ? "0.0.0.0" : commandLine.getOptionValue("h");
-            ServerConfig.serverConfig.setLocal_address(hostAddress);
+            ServerConfig.serverConfig.setLocalAddress(hostAddress);
             // port
             String portOptionValue = commandLine.getOptionValue("P");
             int port = portOptionValue == null || "".equals(portOptionValue) ? 1080 : Integer.parseInt(portOptionValue);
-            ServerConfig.serverConfig.setLocal_port(port);
+            ServerConfig.serverConfig.setLocalPort(port);
             // password
             ServerConfig.serverConfig.setPassword(commandLine.getOptionValue("p"));
             // method
             ServerConfig.serverConfig.setMethod(commandLine.getOptionValue("m"));
+
+            // boss thread number
+            String bossThreadNumber = commandLine.getOptionValue("bn") == null || "".equals(commandLine.getOptionValue("bn")) ? String.valueOf(Runtime.getRuntime().availableProcessors() * 2) : commandLine.getOptionValue("bn");
+            ServerConfig.serverConfig.setBossThreadNumber(Integer.parseInt(bossThreadNumber));
+            // workers thread number
+            String workersThreadNumber = commandLine.getOptionValue("wn") == null || "".equals(commandLine.getOptionValue("wn")) ? String.valueOf(Runtime.getRuntime().availableProcessors() * 2) : commandLine.getOptionValue("wn");
+            ServerConfig.serverConfig.setWorkersThreadNumber(Integer.parseInt(workersThreadNumber));
+            // client readIdle time(second)
+            String clientReadIdleTime = commandLine.getOptionValue("cri") == null || "".equals(commandLine.getOptionValue("cri")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("cri");
+            ServerConfig.serverConfig.setCriTime(Long.valueOf(clientReadIdleTime));
+            // client writeIdle time(second)
+            String clientWriteIdleTime = commandLine.getOptionValue("cwi") == null || "".equals(commandLine.getOptionValue("cwi")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("cwi");
+            ServerConfig.serverConfig.setCwiTime(Long.valueOf(clientWriteIdleTime));
+            // client allIdle time(second)
+            String clientAllIdleTime = commandLine.getOptionValue("cai") == null || "".equals(commandLine.getOptionValue("cai")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("cai");
+            ServerConfig.serverConfig.setCriTime(Long.valueOf(clientAllIdleTime));
+            // remote readIdle time(second)
+            String remoteReadIdleTime = commandLine.getOptionValue("rri") == null || "".equals(commandLine.getOptionValue("rri")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("rri");
+            ServerConfig.serverConfig.setCriTime(Long.valueOf(remoteReadIdleTime));
+            // remote writeIdle time(second)
+            String remoteWriteIdleTime = commandLine.getOptionValue("rwi") == null || "".equals(commandLine.getOptionValue("rwi")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("rwi");
+            ServerConfig.serverConfig.setCwiTime(Long.valueOf(remoteWriteIdleTime));
+            // remote allIdle time(second)
+            String remoteAllIdleTime = commandLine.getOptionValue("rai") == null || "".equals(commandLine.getOptionValue("rai")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("rai");
+            ServerConfig.serverConfig.setCriTime(Long.valueOf(remoteAllIdleTime));
         }
 
     }

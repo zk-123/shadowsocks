@@ -11,11 +11,11 @@ public class ServerConfig {
     /**
      * localAddress
      */
-    private String local_address;
+    private String localAddress;
     /**
      * localPort
      */
-    private int local_port;
+    private int localPort;
     /**
      * password
      */
@@ -28,21 +28,54 @@ public class ServerConfig {
      * timeOut
      */
     private Long timeout;
+    /**
+     * number of boss thread
+     */
+    private int bossThreadNumber;
+    /**
+     * number of workers thread
+     */
+    private int workersThreadNumber;
+    /**
+     * client readIdle time(second)
+     */
+    private Long criTime;
+    /**
+     * client readIdle time(second)
+     */
+    private Long cwiTime;
+    /**
+     * client allIdle time(second)
+     */
+    private Long caiTime;
+    /**
+     * remote readIdle time(second)
+     */
+    private Long rriTime;
+    /**
+     * remote readIdle time(second)
+     */
+    private Long rwiTime;
+    /**
+     * remote allIdle time(second)
+     */
+    private Long raiTime;
 
-    public String getLocal_address() {
-        return local_address;
+
+    public String getLocalAddress() {
+        return localAddress;
     }
 
-    public void setLocal_address(String local_address) {
-        this.local_address = local_address;
+    public void setLocalAddress(String localAddress) {
+        this.localAddress = localAddress;
     }
 
-    public int getLocal_port() {
-        return local_port;
+    public int getLocalPort() {
+        return localPort;
     }
 
-    public void setLocal_port(int local_port) {
-        this.local_port = local_port;
+    public void setLocalPort(int localPort) {
+        this.localPort = localPort;
     }
 
     public String getPassword() {
@@ -67,5 +100,69 @@ public class ServerConfig {
 
     public void setTimeout(Long timeout) {
         this.timeout = timeout;
+    }
+
+    public int getBossThreadNumber() {
+        return bossThreadNumber;
+    }
+
+    public void setBossThreadNumber(int bossThreadNumber) {
+        this.bossThreadNumber = bossThreadNumber;
+    }
+
+    public int getWorkersThreadNumber() {
+        return workersThreadNumber;
+    }
+
+    public void setWorkersThreadNumber(int workersThreadNumber) {
+        this.workersThreadNumber = workersThreadNumber;
+    }
+
+    public Long getCriTime() {
+        return criTime;
+    }
+
+    public void setCriTime(Long criTime) {
+        this.criTime = criTime;
+    }
+
+    public Long getCwiTime() {
+        return cwiTime;
+    }
+
+    public void setCwiTime(Long cwiTime) {
+        this.cwiTime = cwiTime;
+    }
+
+    public Long getCaiTime() {
+        return caiTime;
+    }
+
+    public void setCaiTime(Long caiTime) {
+        this.caiTime = caiTime;
+    }
+
+    public Long getRriTime() {
+        return rriTime;
+    }
+
+    public void setRriTime(Long rriTime) {
+        this.rriTime = rriTime;
+    }
+
+    public Long getRwiTime() {
+        return rwiTime;
+    }
+
+    public void setRwiTime(Long rwiTime) {
+        this.rwiTime = rwiTime;
+    }
+
+    public Long getRaiTime() {
+        return raiTime;
+    }
+
+    public void setRaiTime(Long raiTime) {
+        this.raiTime = raiTime;
     }
 }
