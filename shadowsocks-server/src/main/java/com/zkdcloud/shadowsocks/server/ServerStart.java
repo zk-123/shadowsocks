@@ -22,6 +22,8 @@ import java.io.PrintWriter;
 import java.net.InetSocketAddress;
 import java.util.concurrent.TimeUnit;
 
+import static com.zkdcloud.shadowsocks.server.config.ServerContextConstant.DEFAULT_IDLE_TIMEOUT_SECOND;
+
 /**
  * server start
  *
@@ -58,7 +60,8 @@ public class ServerStart {
                 .childHandler(new ChannelInitializer<Channel>() {
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast(new IdleStateHandler(15 * 60, 15 * 60, 0, TimeUnit.SECONDS))
+                                .addLast(new IdleStateHandler(ServerConfig.serverConfig.getCriTime(), ServerConfig.serverConfig.getCwiTime(),
+                                        ServerConfig.serverConfig.getCaiTime(), TimeUnit.SECONDS))
                                 .addLast(new CryptInitInHandler())
                                 .addLast(new DecodeCipherStreamInHandler())
                                 .addLast(new TcpProxyInHandler())
@@ -149,23 +152,23 @@ public class ServerStart {
             String workersThreadNumber = commandLine.getOptionValue("wn") == null || "".equals(commandLine.getOptionValue("wn")) ? String.valueOf(Runtime.getRuntime().availableProcessors() * 2) : commandLine.getOptionValue("wn");
             ServerConfig.serverConfig.setWorkersThreadNumber(Integer.parseInt(workersThreadNumber));
             // client readIdle time(second)
-            String clientReadIdleTime = commandLine.getOptionValue("cri") == null || "".equals(commandLine.getOptionValue("cri")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("cri");
+            String clientReadIdleTime = commandLine.getOptionValue("cri") == null || "".equals(commandLine.getOptionValue("cri")) ? String.valueOf(DEFAULT_IDLE_TIMEOUT_SECOND) : commandLine.getOptionValue("cri");
             ServerConfig.serverConfig.setCriTime(Long.valueOf(clientReadIdleTime));
             // client writeIdle time(second)
-            String clientWriteIdleTime = commandLine.getOptionValue("cwi") == null || "".equals(commandLine.getOptionValue("cwi")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("cwi");
+            String clientWriteIdleTime = commandLine.getOptionValue("cwi") == null || "".equals(commandLine.getOptionValue("cwi")) ? String.valueOf(DEFAULT_IDLE_TIMEOUT_SECOND) : commandLine.getOptionValue("cwi");
             ServerConfig.serverConfig.setCwiTime(Long.valueOf(clientWriteIdleTime));
             // client allIdle time(second)
-            String clientAllIdleTime = commandLine.getOptionValue("cai") == null || "".equals(commandLine.getOptionValue("cai")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("cai");
-            ServerConfig.serverConfig.setCriTime(Long.valueOf(clientAllIdleTime));
+            String clientAllIdleTime = commandLine.getOptionValue("cai") == null || "".equals(commandLine.getOptionValue("cai")) ? String.valueOf(0) : commandLine.getOptionValue("cai");
+            ServerConfig.serverConfig.setCaiTime(Long.valueOf(clientAllIdleTime));
             // remote readIdle time(second)
-            String remoteReadIdleTime = commandLine.getOptionValue("rri") == null || "".equals(commandLine.getOptionValue("rri")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("rri");
-            ServerConfig.serverConfig.setCriTime(Long.valueOf(remoteReadIdleTime));
+            String remoteReadIdleTime = commandLine.getOptionValue("rri") == null || "".equals(commandLine.getOptionValue("rri")) ? String.valueOf(DEFAULT_IDLE_TIMEOUT_SECOND) : commandLine.getOptionValue("rri");
+            ServerConfig.serverConfig.setRriTime(Long.valueOf(remoteReadIdleTime));
             // remote writeIdle time(second)
-            String remoteWriteIdleTime = commandLine.getOptionValue("rwi") == null || "".equals(commandLine.getOptionValue("rwi")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("rwi");
-            ServerConfig.serverConfig.setCwiTime(Long.valueOf(remoteWriteIdleTime));
+            String remoteWriteIdleTime = commandLine.getOptionValue("rwi") == null || "".equals(commandLine.getOptionValue("rwi")) ? String.valueOf(DEFAULT_IDLE_TIMEOUT_SECOND) : commandLine.getOptionValue("rwi");
+            ServerConfig.serverConfig.setRwiTime(Long.valueOf(remoteWriteIdleTime));
             // remote allIdle time(second)
-            String remoteAllIdleTime = commandLine.getOptionValue("rai") == null || "".equals(commandLine.getOptionValue("rai")) ? String.valueOf(60 * 20) : commandLine.getOptionValue("rai");
-            ServerConfig.serverConfig.setCriTime(Long.valueOf(remoteAllIdleTime));
+            String remoteAllIdleTime = commandLine.getOptionValue("rai") == null || "".equals(commandLine.getOptionValue("rai")) ? String.valueOf(0) : commandLine.getOptionValue("rai");
+            ServerConfig.serverConfig.setRaiTime(Long.valueOf(remoteAllIdleTime));
         }
 
     }
@@ -181,7 +184,7 @@ public class ServerStart {
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
-            helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "ss -help", null,
+            helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks-xxx.jar -help", null,
                     OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
             printWriter.flush();
             HELP_STRING = new String(byteArrayOutputStream.toByteArray());

@@ -1,6 +1,7 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
+import com.zkdcloud.shadowsocks.server.config.ServerConfig;
 import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.buffer.ByteBuf;
@@ -68,7 +69,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                         @Override
                         protected void initChannel(Channel ch) {
                             ch.pipeline()
-                                    .addLast("timeout", new IdleStateHandler(15 * 60, 15 * 60, 0, TimeUnit.SECONDS))
+                                    .addLast("timeout", new IdleStateHandler(ServerConfig.serverConfig.getRriTime(), ServerConfig.serverConfig.getRwiTime(), ServerConfig.serverConfig.getRaiTime(), TimeUnit.SECONDS))
                                     .addLast("transfer", new SimpleChannelInboundHandler<ByteBuf>() {
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
@@ -183,8 +184,12 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     private void dropBufList(){
         if(!clientBuffs.isEmpty()){
             for (ByteBuf clientBuff : clientBuffs) {
-                ReferenceCountUtil.release(clientBuff.retain(clientBuff.refCnt()));
+                if(clientBuff.refCnt() != 0){
+                    clientBuff.retain(clientBuff.refCnt());
+                    ReferenceCountUtil.release(clientBuff);
+                }
             }
+            clientBuffs.clear();
         }
     }
 

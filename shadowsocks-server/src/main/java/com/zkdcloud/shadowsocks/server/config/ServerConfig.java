@@ -25,10 +25,6 @@ public class ServerConfig {
      */
     private String method;
     /**
-     * timeOut
-     */
-    private Long timeout;
-    /**
      * number of boss thread
      */
     private int bossThreadNumber;
@@ -39,27 +35,27 @@ public class ServerConfig {
     /**
      * client readIdle time(second)
      */
-    private Long criTime;
+    private long criTime;
     /**
      * client readIdle time(second)
      */
-    private Long cwiTime;
+    private long cwiTime;
     /**
      * client allIdle time(second)
      */
-    private Long caiTime;
+    private long caiTime;
     /**
      * remote readIdle time(second)
      */
-    private Long rriTime;
+    private long rriTime;
     /**
      * remote readIdle time(second)
      */
-    private Long rwiTime;
+    private long rwiTime;
     /**
      * remote allIdle time(second)
      */
-    private Long raiTime;
+    private long raiTime;
 
 
     public String getLocalAddress() {
@@ -94,14 +90,6 @@ public class ServerConfig {
         this.method = method;
     }
 
-    public Long getTimeout() {
-        return timeout;
-    }
-
-    public void setTimeout(Long timeout) {
-        this.timeout = timeout;
-    }
-
     public int getBossThreadNumber() {
         return bossThreadNumber;
     }
@@ -118,51 +106,51 @@ public class ServerConfig {
         this.workersThreadNumber = workersThreadNumber;
     }
 
-    public Long getCriTime() {
+    public long getCriTime() {
         return criTime;
     }
 
-    public void setCriTime(Long criTime) {
+    public void setCriTime(long criTime) {
         this.criTime = criTime;
     }
 
-    public Long getCwiTime() {
+    public long getCwiTime() {
         return cwiTime;
     }
 
-    public void setCwiTime(Long cwiTime) {
+    public void setCwiTime(long cwiTime) {
         this.cwiTime = cwiTime;
     }
 
-    public Long getCaiTime() {
+    public long getCaiTime() {
         return caiTime;
     }
 
-    public void setCaiTime(Long caiTime) {
+    public void setCaiTime(long caiTime) {
         this.caiTime = caiTime;
     }
 
-    public Long getRriTime() {
+    public long getRriTime() {
         return rriTime;
     }
 
-    public void setRriTime(Long rriTime) {
+    public void setRriTime(long rriTime) {
         this.rriTime = rriTime;
     }
 
-    public Long getRwiTime() {
+    public long getRwiTime() {
         return rwiTime;
     }
 
-    public void setRwiTime(Long rwiTime) {
+    public void setRwiTime(long rwiTime) {
         this.rwiTime = rwiTime;
     }
 
-    public Long getRaiTime() {
+    public long getRaiTime() {
         return raiTime;
     }
 
-    public void setRaiTime(Long raiTime) {
+    public void setRaiTime(long raiTime) {
         this.raiTime = raiTime;
     }
 }
