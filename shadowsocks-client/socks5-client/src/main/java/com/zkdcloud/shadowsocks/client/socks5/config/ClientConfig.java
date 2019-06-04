@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.client.socks5.config;
 
 /**
- * client config (usually is standard shadowsocks 'config.json')
+ * client config
  *
  * @author zk
  * @since 2018/8/23

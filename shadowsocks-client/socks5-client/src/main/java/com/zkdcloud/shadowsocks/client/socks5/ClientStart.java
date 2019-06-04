@@ -54,7 +54,7 @@ public class ClientStart{
                     @Override
                     protected void initChannel(Channel ch) throws Exception {
                         ch.pipeline()
-                                .addLast("idle", new IdleStateHandler(0, 0, 3, TimeUnit.MINUTES))
+                                .addLast("idle", new IdleStateHandler(20, 20, 0, TimeUnit.MINUTES))
                                 .addLast("crypt-init",new CryptInitInHandler())
                                 .addLast("socks5-door", new Socks5ServerDoorHandler());
                     }
@@ -131,7 +131,7 @@ public class ClientStart{
 
             ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
             PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
-            helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "socks5 -help", null,
+            helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks-socks5-client-xxx.jar -help", null,
                     OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
             printWriter.flush();
             HELP_STRING = new String(byteArrayOutputStream.toByteArray());
