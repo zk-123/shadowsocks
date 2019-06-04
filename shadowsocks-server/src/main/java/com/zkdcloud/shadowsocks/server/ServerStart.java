@@ -1,5 +1,7 @@
 package com.zkdcloud.shadowsocks.server;
 
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.LoggerContext;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
@@ -20,6 +22,7 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static com.zkdcloud.shadowsocks.server.config.ServerContextConstant.DEFAULT_IDLE_TIMEOUT_SECOND;
@@ -74,7 +77,7 @@ public class ServerStart {
         InetSocketAddress localAddress = "0.0.0.0".equals(localIp) || "::0".equals(localIp) ? new InetSocketAddress(localPort) : new InetSocketAddress(localIp, localPort);
 
         ChannelFuture channelFuture = serverBootstrap.bind(localAddress).sync();
-        logger.info("shadowsocks tcp server running at {}:{}", localAddress.getHostName(), localAddress.getPort());
+        logger.info("shadowsocks server [tcp] running at {}:{}", localAddress.getHostName(), localAddress.getPort());
         channelFuture.channel().closeFuture().sync();
     }
 
@@ -118,6 +121,9 @@ public class ServerStart {
             OPTIONS.addOption(Option.builder("rwi").longOpt("remote_write_idle").hasArg(true).type(Long.class).desc("remote writeIdle time(second)").build());
             // remote allIdle time(second)
             OPTIONS.addOption(Option.builder("rai").longOpt("remote_all_idle").hasArg(true).type(Long.class).desc("remote allIdle time(second)").build());
+
+            // set log level
+            OPTIONS.addOption(Option.builder("level").longOpt("log_level").hasArg(true).type(String.class).desc("log level").build());
             try {
                 commandLine = commandLineParser.parse(OPTIONS, args);
             } catch (ParseException e) {
@@ -169,6 +175,18 @@ public class ServerStart {
             // remote allIdle time(second)
             String remoteAllIdleTime = commandLine.getOptionValue("rai") == null || "".equals(commandLine.getOptionValue("rai")) ? String.valueOf(0) : commandLine.getOptionValue("rai");
             ServerConfig.serverConfig.setRaiTime(Long.valueOf(remoteAllIdleTime));
+
+            String levelName = commandLine.getOptionValue("level");
+            if(levelName != null && !"".equals(levelName)){
+                Level level = Level.toLevel(levelName,Level.INFO);
+                logger.info("set log level to " + level.toString());
+
+                LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
+                List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
+                for (ch.qos.logback.classic.Logger logger1 : loggerList) {
+                    logger1.setLevel(level);
+                }
+            }
         }
 
     }

@@ -115,13 +115,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                 if (future.isSuccess()) {
                     remoteChannel = future.channel();
 
-                    if (logger.isDebugEnabled()) {
-                        try {
-                            logger.debug("host: [{}:{}] connect success, client channelId is [{}],  remote channelId is [{}]", remoteAddress.getHostName(), remoteAddress.getPort(), clientChannel.id(), remoteChannel.id());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
+                    logger.info("host: [{}:{}] connect success, client channelId is [{}],  remote channelId is [{}]", remoteAddress.getHostName(), remoteAddress.getPort(), clientChannel.id(), remoteChannel.id());
                     clientBuffs.add(msg.retain());
                     writeAndFlushByteBufList();
                 } else {
@@ -214,7 +208,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
         logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
         ctx.channel().close();
     }
