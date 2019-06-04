@@ -43,7 +43,7 @@ public class ServerStart {
     /**
      * worksLoopGroup
      */
-    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup();
+    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getWorkersThreadNumber());
     /**
      * serverBootstrap
      */
