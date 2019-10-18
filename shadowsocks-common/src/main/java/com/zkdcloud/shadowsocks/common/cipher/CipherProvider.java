@@ -1,5 +1,6 @@
 package com.zkdcloud.shadowsocks.common.cipher;
 
+import com.zkdcloud.shadowsocks.common.cipher.ahead.Aes256GcmCipher;
 import com.zkdcloud.shadowsocks.common.cipher.stream.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,8 @@ public class CipherProvider {
         /*others stream cipher */
         cipherMap.put("rc4-md5", Rc4Md5Cipher.class);
         cipherMap.put("salsa20", Salsa20Cipher.class);
+
+        cipherMap.put("aes-256-gcm", Aes256GcmCipher.class);
     }
 
     /**
