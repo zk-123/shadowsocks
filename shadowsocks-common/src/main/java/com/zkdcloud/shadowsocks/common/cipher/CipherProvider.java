@@ -1,13 +1,14 @@
 package com.zkdcloud.shadowsocks.common.cipher;
 
 import com.zkdcloud.shadowsocks.common.cipher.aead.SSAeadCipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.SSStreamCipher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * cipherProvider
@@ -21,45 +22,55 @@ public class CipherProvider {
      */
     private static Logger logger = LoggerFactory.getLogger(CipherProvider.class);
 
-    private static Map<String, Class<? extends AbstractCipher>> cipherMap = new HashMap<>();
+    private static Set<String> streamCiphers = new HashSet<>();
+
+    private static Set<String> aeadCiphers = new HashSet<>();
+
 
     static {
-        /* aes */
-        cipherMap.put("aes-128-cfb", Aes128CfbCipher.class);
-        cipherMap.put("aes-192-cfb", Aes192CfbCipher.class);
-        cipherMap.put("aes-256-cfb", Aes256CfbCipher.class);
+        /* stream */
+        streamCiphers.add("aes-128-cfb");
+        streamCiphers.add("aes-192-cfb");
+        streamCiphers.add("aes-256-cfb");
+        streamCiphers.add("camellia-128-cfb");
+        streamCiphers.add("camellia-192-cfb");
+        streamCiphers.add("camellia-256-cfb");
+        streamCiphers.add("chacha20");
+        streamCiphers.add("chacha20-ietf");
+        streamCiphers.add("rc4-md5");
+        streamCiphers.add("salsa20");
 
-        /* camellia */
-        cipherMap.put("camellia-128-cfb", Camellia128CfbCipher.class);
-        cipherMap.put("camellia-192-cfb", Camellia192CfbCipher.class);
-        cipherMap.put("camellia-256-cfb", Camellia256CfbCipher.class);
-
-        /* chacha20 */
-        cipherMap.put("chacha20", Chacha20Cipher.class);
-        cipherMap.put("chacha20-ietf", Chacha20IetfCipher.class);
-
-        /*others stream cipher */
-        cipherMap.put("rc4-md5", Rc4Md5Cipher.class);
-        cipherMap.put("salsa20", Salsa20Cipher.class);
-
-        cipherMap.put("aes-256-gcm", SSAeadCipher.class);
+        /* aead */
+        aeadCiphers.add("aes-128-gcm");
+        aeadCiphers.add("aes-192-gcm");
+        aeadCiphers.add("aes-256-gcm");
     }
 
     /**
      * get Cipher by standard cipherName
      *
-     * @param cipherName cipherName
-     * @param password   password
+     * @param cipherMethodName cipherMethodName
+     * @param password     password
      * @return new cipher instance
      */
-    public static AbstractCipher getByName(String cipherName, String password) {
-        if (cipherMap.containsKey(cipherName)) {
-            Class<? extends AbstractCipher> cipherClazz = cipherMap.get(cipherName);
+    public static SSCipher getByName(String cipherMethodName, String password) {
+        if (streamCiphers.contains(cipherMethodName)) {
             try {
-                Constructor<? extends AbstractCipher> cipherClazzConstructor = cipherClazz.getConstructor(String.class);
-                return cipherClazzConstructor.newInstance(password);
+                Constructor<SSStreamCipher> cipherClazzConstructor = SSStreamCipher.class.getConstructor(String.class, String.class);
+                return cipherClazzConstructor.newInstance(cipherMethodName, password);
             } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | InstantiationException e) {
-                logger.error("get init cipher fail", e.getMessage());
+                logger.error("get init cipher fail: {}", e.getMessage());
+                return null;
+            }
+        }
+
+        if (aeadCiphers.contains(cipherMethodName)) {
+            try {
+                Constructor<SSAeadCipher> cipherClazzConstructor = SSAeadCipher.class.getConstructor(String.class, String.class);
+                return cipherClazzConstructor.newInstance(cipherMethodName, password);
+            } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | InstantiationException e) {
+                logger.error("get init cipher fail: {}", e.getMessage());
+                return null;
             }
         }
         return null;

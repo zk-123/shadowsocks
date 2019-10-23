@@ -1,6 +1,6 @@
 package com.zkdcloud.shadowsocks.server.config;
 
-import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import io.netty.util.AttributeKey;
 
 import java.net.InetSocketAddress;
@@ -15,7 +15,7 @@ public class ServerContextConstant {
     /**
      * server cipher
      */
-    public static AttributeKey<AbstractCipher> SERVER_CIPHER = AttributeKey.valueOf("server cipher");
+    public static AttributeKey<SSCipher> SERVER_CIPHER = AttributeKey.valueOf("server cipher");
     /**
      * serverConfig
      */

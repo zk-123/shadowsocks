@@ -1,10 +1,10 @@
 package com.zkdcloud.shadowsocks.common.cipher.aead;
 
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import com.zkdcloud.shadowsocks.common.util.HeapByteBufUtil;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import io.netty.util.ReferenceCountUtil;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.engines.AESEngine;
@@ -23,7 +23,7 @@ import java.security.SecureRandom;
  * @author zk
  * @since 2019/10/18
  */
-public class SSAeadCipher {
+public class SSAeadCipher implements SSCipher {
     private String cipherMethod;
     private String password;
 
@@ -42,13 +42,7 @@ public class SSAeadCipher {
         encodeNonceBytes = new byte[getNonceSize()];
     }
 
-    /**
-     * analysis ss protocol and decode bytes
-     *
-     * @param secretBytes secretBytes from stream
-     * @return originBytes
-     * @throws InvalidCipherTextException ex
-     */
+    @Override
     public byte[] decodeSSBytes(byte[] secretBytes) throws InvalidCipherTextException {
         int readIndex = 0;
         if (decodeSubKey == null) {
@@ -60,10 +54,10 @@ public class SSAeadCipher {
 
         ByteBuf originBytesSummary = Unpooled.buffer();
         while (readIndex < secretBytes.length) {
-            //decode length
+            //decode payload length
             byte[] secretLength = new byte[2 + getTagSize()];
             System.arraycopy(secretBytes, readIndex, secretLength, 0, secretLength.length);
-            int originLength = HeapByteBufUtil.getShort(aeDecodeBytes(aeDecodeBytes(secretLength)), 0);
+            int originLength = HeapByteBufUtil.getShort(aeDecodeBytes(secretLength), 0);
             readIndex += secretLength.length;
 
             //decode payload
@@ -73,16 +67,29 @@ public class SSAeadCipher {
             readIndex += secretPayload.length;
             originBytesSummary.writeBytes(originPayload);
         }
-        ReferenceCountUtil.release(originBytesSummary);
         return originBytesSummary.array();
     }
 
-    public byte[] encodeSSBytes(byte[] originBytes){
+    @Override
+    public byte[] encodeSSBytes(byte[] originBytes) throws InvalidCipherTextException {
         ByteBuf secretBytesSummary = Unpooled.buffer();
-        if(encodeSubKey == null){
+        if (encodeSubKey == null) {
             byte[] salt = getRandomBytes(getSaltSize());
-            getSubKey()
+            encodeSubKey = getSubKey(ShadowsocksUtils.getShadowsocksKey(password, getKeySize()), salt);
+            secretBytesSummary.writeBytes(salt);
         }
+
+        //encode payload length
+        byte[] originLengthBytes = new byte[2];
+        HeapByteBufUtil.setShort(originLengthBytes, 0, originBytes.length);
+        byte[] secretLengthBytes = aeEncodeBytes(originLengthBytes);
+        secretBytesSummary.writeBytes(secretLengthBytes);
+
+        //encode payload
+        byte[] secretPayloadBytes = aeEncodeBytes(originBytes);
+        secretBytesSummary.writeBytes(secretPayloadBytes);
+
+        return secretBytesSummary.array();
     }
 
     /**
@@ -104,6 +111,24 @@ public class SSAeadCipher {
         return out;
     }
 
+    /**
+     * encode origin bytes
+     *
+     * @param originBytes originBytes
+     * @return [secretBytes][tag]
+     * @throws InvalidCipherTextException ex
+     */
+    private byte[] aeEncodeBytes(byte[] originBytes) throws InvalidCipherTextException {
+        if (encodeGcmCipher == null) {
+            encodeGcmCipher = new GCMBlockCipher(new AESEngine());
+        }
+        encodeGcmCipher.init(true, new AEADParameters(new KeyParameter(encodeSubKey), getTagSize() * 8, getEncodeNonceBytes()));
+        byte[] out = new byte[originBytes.length + getTagSize()];
+        int processLength = encodeGcmCipher.processBytes(originBytes, 0, originBytes.length, out, 0);
+        encodeGcmCipher.doFinal(out, processLength);
+        return out;
+    }
+
     private byte[] getSubKey(byte[] key, byte[] salt) {
         byte[] result = new byte[32];
         HKDFBytesGenerator hkdfBytesGenerator = new HKDFBytesGenerator(new SHA1Digest());
@@ -111,6 +136,15 @@ public class SSAeadCipher {
         hkdfBytesGenerator.init(hkdfParameters);
         hkdfBytesGenerator.generateBytes(result, 0, 32);
         return result;
+    }
+
+    private byte[] getEncodeNonceBytes() {
+        try {
+            byte[] nonceBytes = ByteUtils.clone(encodeNonceBytes);
+            return nonceBytes;
+        } finally {
+            incrementEncodeNonce();
+        }
     }
 
     private byte[] getDecodeNonceBytes() {
@@ -127,6 +161,16 @@ public class SSAeadCipher {
         for (int i = 0; i < decodeNonceBytes.length; i++) {
             decodeNonceBytes[i]++;
             if (decodeNonceBytes[i] != 0) {
+                break;
+            }
+        }
+    }
+
+    // increment little-endian encoded unsigned integer b. Wrap around on overflow.
+    private void incrementEncodeNonce() {
+        for (int i = 0; i < encodeNonceBytes.length; i++) {
+            encodeNonceBytes[i]++;
+            if (encodeNonceBytes[i] != 0) {
                 break;
             }
         }

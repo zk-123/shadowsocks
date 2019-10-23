@@ -1,5 +1,6 @@
 package com.zkdcloud.shadowsocks.common.cipher.stream;
 
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import org.bouncycastle.crypto.CipherParameters;
 import org.bouncycastle.crypto.StreamCipher;
@@ -18,9 +19,9 @@ import java.security.SecureRandom;
  * @author zk
  * @since 2018/8/27
  */
-public class SSStreamCipher {
+public class SSStreamCipher implements SSCipher {
 
-    private String cipherMethod;
+    private String cipherMethodName;
     private String password;
     /**
      * decode cipher
@@ -39,15 +40,16 @@ public class SSStreamCipher {
      */
     private byte[] encodeIVBytes = null;
 
-    public void init(String cipherMethod, String password) {
-        this.cipherMethod = cipherMethod;
+    public SSStreamCipher(String cipherMethodName, String password) {
+        this.cipherMethodName = cipherMethodName;
         this.password = password;
 
         decodeStreamCipher = getNewCipherInstance();
         encodeStreamCipher = getNewCipherInstance();
     }
 
-    public byte[] decodeBytes(byte[] secretBytes) {
+    @Override
+    public byte[] decodeSSBytes(byte[] secretBytes) throws Exception {
         int offset = 0;
         if (!decodeInit) {
             //parameter
@@ -55,7 +57,7 @@ public class SSStreamCipher {
             System.arraycopy(secretBytes, 0, ivBytes, 0, offset = getVILength());
 
             CipherParameters viParameter;
-            if("rc4-md5".equals(cipherMethod)){
+            if("rc4-md5".equals(cipherMethodName)){
                 viParameter = new KeyParameter(getRc4KeyBytes(ivBytes));
             } else {
                 viParameter = new ParametersWithIV(new KeyParameter(ShadowsocksUtils.getShadowsocksKey(password, getKeySize())), ivBytes);
@@ -71,7 +73,8 @@ public class SSStreamCipher {
         return target;
     }
 
-    public byte[] encodeBytes(byte[] originBytes) {
+    @Override
+    public byte[] encodeSSBytes(byte[] originBytes) throws Exception {
         byte[] target;
         target = encodeIVBytes == null ? new byte[getVILength() + originBytes.length] : new byte[originBytes.length];
         int outOff = 0;
@@ -82,7 +85,7 @@ public class SSStreamCipher {
             outOff = getVILength();
 
             CipherParameters viParameter;
-            if("rc4-md5".equals(cipherMethod)){
+            if("rc4-md5".equals(cipherMethodName)){
                 viParameter = new KeyParameter(getRc4KeyBytes(encodeIVBytes));
             } else {
                 viParameter = new ParametersWithIV(new KeyParameter(ShadowsocksUtils.getShadowsocksKey(password, getKeySize())), encodeIVBytes);
@@ -95,12 +98,12 @@ public class SSStreamCipher {
     }
 
     /**
-     * 获取新的StreamCipher
+     * get newStreamCipher
      *
      * @return streamCipher
      */
     private StreamCipher getNewCipherInstance() {
-        switch (cipherMethod) {
+        switch (cipherMethodName) {
             case "aes-128-cfb":
             case "aes-192-cfb":
             case "aes-256-cfb":
@@ -118,7 +121,7 @@ public class SSStreamCipher {
             case "salsa20":
                 return new Salsa20Engine();
             default:
-                throw new IllegalArgumentException("not support method：" + cipherMethod);
+                throw new IllegalArgumentException("not support method：" + cipherMethodName);
         }
     }
 
@@ -128,7 +131,7 @@ public class SSStreamCipher {
      * @return keySize
      */
     private int getKeySize() {
-        switch (cipherMethod) {
+        switch (cipherMethodName) {
             case "aes-128-cfb":
                 return 16;
             case "aes-192-cfb":
@@ -150,7 +153,7 @@ public class SSStreamCipher {
             case "salsa20":
                 return 32;
             default:
-                throw new IllegalArgumentException("not support method：" + cipherMethod);
+                throw new IllegalArgumentException("not support method：" + cipherMethodName);
         }
     }
 
@@ -160,7 +163,7 @@ public class SSStreamCipher {
      * @return iv length
      */
     private int getVILength() {
-        switch (cipherMethod) {
+        switch (cipherMethodName) {
             case "aes-128-cfb":
             case "aes-192-cfb":
             case "aes-256-cfb":
@@ -175,12 +178,8 @@ public class SSStreamCipher {
             case "salsa20":
                 return 8;
             default:
-                throw new IllegalArgumentException("not support method：" + cipherMethod);
+                throw new IllegalArgumentException("not support method：" + cipherMethodName);
         }
-    }
-
-    public byte[] getEncodeViBytes() {
-        return encodeIVBytes;
     }
 
     /**

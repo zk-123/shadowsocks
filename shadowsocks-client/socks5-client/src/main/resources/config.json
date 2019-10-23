@@ -1,0 +1,9 @@
+{
+  "server": "97.64.30.69",
+  "server_port": 55542,
+  "local_port": 2020,
+  "password": "123456",
+  "method": "salsa20",
+  "remarks": "",
+  "timeout": 300
+}

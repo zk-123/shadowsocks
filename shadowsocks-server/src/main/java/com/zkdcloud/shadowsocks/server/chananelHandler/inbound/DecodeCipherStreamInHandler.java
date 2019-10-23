@@ -1,6 +1,6 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
-import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.buffer.ByteBuf;
@@ -18,8 +18,10 @@ import java.util.List;
  */
 public class DecodeCipherStreamInHandler extends MessageToMessageDecoder<ByteBuf> {
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        AbstractCipher cipher = ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get();
-        byte[] realBytes = cipher.decodeBytes(msg);
+        SSCipher cipher = ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get();
+        byte[] secretBytes = new byte[msg.readableBytes()];
+        msg.readBytes(secretBytes);
+        byte[] realBytes = cipher.decodeSSBytes(secretBytes);
 
         msg.clear().writeBytes(realBytes);
         // get Ip

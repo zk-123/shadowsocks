@@ -90,6 +90,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
                                         @Override
                                         public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                                            cause.printStackTrace();
                                             logger.error("remote channel [{}], cause:{}", ctx.channel().id(), cause.getMessage());
                                             closeRemoteChannel();
                                             closeClientChannel();
@@ -209,7 +210,8 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
-        logger.error("channelId:{}, cause:{}", ctx.channel().id(), cause.getMessage());
+        cause.printStackTrace();
+        logger.error("channelId:{}, cause:", ctx.channel().id(), cause);
         ctx.channel().close();
     }
 

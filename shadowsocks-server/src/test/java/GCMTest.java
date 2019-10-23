@@ -1,5 +1,4 @@
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
-import io.netty.buffer.Unpooled;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.digests.SHA1Digest;
 import org.bouncycastle.crypto.engines.AESEngine;
@@ -8,9 +7,6 @@ import org.bouncycastle.crypto.modes.GCMBlockCipher;
 import org.bouncycastle.crypto.params.AEADParameters;
 import org.bouncycastle.crypto.params.HKDFParameters;
 import org.bouncycastle.crypto.params.KeyParameter;
-import org.bouncycastle.util.Strings;
-
-import java.util.UUID;
 
 /**
  * description
