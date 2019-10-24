@@ -4,6 +4,7 @@ import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import com.zkdcloud.shadowsocks.common.util.HeapByteBufUtil;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
 import io.netty.buffer.Unpooled;
 import org.bouncycastle.crypto.InvalidCipherTextException;
 import org.bouncycastle.crypto.digests.SHA1Digest;
@@ -89,7 +90,7 @@ public class SSAeadCipher implements SSCipher {
         byte[] secretPayloadBytes = aeEncodeBytes(originBytes);
         secretBytesSummary.writeBytes(secretPayloadBytes);
 
-        return secretBytesSummary.array();
+        return ByteBufUtil.getBytes(secretBytesSummary);
     }
 
     /**
