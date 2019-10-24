@@ -107,7 +107,8 @@ public class ClientStart{
             }
 
             // remote ip
-            ClientConfig.clientConfig.setServer(commandLine.getOptionValue("s"));
+            ClientConfig.clientConfig.setServer("127.0.0.1");
+
             // remote port
             ClientConfig.clientConfig.setServer_port(Integer.parseInt(commandLine.getOptionValue("P")));
             // remote secret key

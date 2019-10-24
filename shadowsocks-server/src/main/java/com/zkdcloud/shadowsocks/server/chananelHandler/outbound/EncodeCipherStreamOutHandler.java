@@ -23,7 +23,12 @@ public class EncodeCipherStreamOutHandler extends MessageToMessageEncoder<ByteBu
         byte[] realData = new byte[msg.readableBytes()];
         msg.getBytes(0, realData);
 
-        byte[] resultData = cipher.encodeSSBytes(realData);
+        byte[] resultData = new byte[0];
+        try {
+            resultData = cipher.encodeSSBytes(realData);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         out.add(Unpooled.buffer().writeBytes(resultData));
     }
 }

@@ -1,5 +1,6 @@
 package com.zkdcloud.shadowsocks.common.cipher.aead;
 
+import com.zkdcloud.shadowsocks.common.cipher.IncompleteDealException;
 import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import com.zkdcloud.shadowsocks.common.util.HeapByteBufUtil;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
@@ -39,14 +40,16 @@ public class SSAeadCipher implements SSCipher {
     public SSAeadCipher(String cipherMethod, String password) {
         this.cipherMethod = cipherMethod;
         this.password = password;
-        decodeNonceBytes = new byte[getNonceSize()];
-        encodeNonceBytes = new byte[getNonceSize()];
     }
 
     @Override
-    public byte[] decodeSSBytes(byte[] secretBytes) throws InvalidCipherTextException {
+    public byte[] decodeSSBytes(byte[] secretBytes) throws Exception {
         int readIndex = 0;
         if (decodeSubKey == null) {
+            if (getSaltSize() > secretBytes.length) {
+                System.out.println("长度不够0");
+                throw new IncompleteDealException(null, 0);
+            }
             byte[] salt = new byte[getSaltSize()];
             System.arraycopy(secretBytes, 0, salt, 0, salt.length);
             decodeSubKey = getSubKey(ShadowsocksUtils.getShadowsocksKey(password, getKeySize()), salt);
@@ -56,19 +59,34 @@ public class SSAeadCipher implements SSCipher {
         ByteBuf originBytesSummary = Unpooled.buffer();
         while (readIndex < secretBytes.length) {
             //decode payload length
+            if (readIndex + 2 + getTagSize() > secretBytes.length) {
+                System.out.println("长度不够1");
+                throw new IncompleteDealException(ByteBufUtil.getBytes(originBytesSummary), readIndex);
+            }
             byte[] secretLength = new byte[2 + getTagSize()];
             System.arraycopy(secretBytes, readIndex, secretLength, 0, secretLength.length);
             int originLength = HeapByteBufUtil.getShort(aeDecodeBytes(secretLength), 0);
+
+            if (readIndex + secretLength.length +  originLength + getTagSize() > secretBytes.length) {
+                System.out.println("长度不够2");
+                throw new IncompleteDealException(ByteBufUtil.getBytes(originBytesSummary), readIndex);
+            }
+            incrementNonce(decodeNonceBytes);
             readIndex += secretLength.length;
 
             //decode payload
             byte[] secretPayload = new byte[originLength + getTagSize()];
-            System.arraycopy(secretBytes, readIndex, secretPayload, 0, secretPayload.length);
+            try {
+                System.arraycopy(secretBytes, readIndex, secretPayload, 0, secretPayload.length);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
             byte[] originPayload = aeDecodeBytes(secretPayload);
+            incrementNonce(decodeNonceBytes);
             readIndex += secretPayload.length;
             originBytesSummary.writeBytes(originPayload);
         }
-        return originBytesSummary.array();
+        return ByteBufUtil.getBytes(originBytesSummary);
     }
 
     @Override
@@ -84,10 +102,12 @@ public class SSAeadCipher implements SSCipher {
         byte[] originLengthBytes = new byte[2];
         HeapByteBufUtil.setShort(originLengthBytes, 0, originBytes.length);
         byte[] secretLengthBytes = aeEncodeBytes(originLengthBytes);
+        incrementNonce(encodeNonceBytes);
         secretBytesSummary.writeBytes(secretLengthBytes);
 
         //encode payload
         byte[] secretPayloadBytes = aeEncodeBytes(originBytes);
+        incrementNonce(encodeNonceBytes);
         secretBytesSummary.writeBytes(secretPayloadBytes);
 
         return ByteBufUtil.getBytes(secretBytesSummary);
@@ -124,6 +144,7 @@ public class SSAeadCipher implements SSCipher {
             encodeGcmCipher = new GCMBlockCipher(new AESEngine());
         }
         encodeGcmCipher.init(true, new AEADParameters(new KeyParameter(encodeSubKey), getTagSize() * 8, getEncodeNonceBytes()));
+
         byte[] out = new byte[originBytes.length + getTagSize()];
         int processLength = encodeGcmCipher.processBytes(originBytes, 0, originBytes.length, out, 0);
         encodeGcmCipher.doFinal(out, processLength);
@@ -140,38 +161,24 @@ public class SSAeadCipher implements SSCipher {
     }
 
     private byte[] getEncodeNonceBytes() {
-        try {
-            byte[] nonceBytes = ByteUtils.clone(encodeNonceBytes);
-            return nonceBytes;
-        } finally {
-            incrementEncodeNonce();
+        if (encodeNonceBytes == null) {
+            encodeNonceBytes = new byte[getNonceSize()];
         }
+        return ByteUtils.clone(encodeNonceBytes);
     }
 
     private byte[] getDecodeNonceBytes() {
-        try {
-            byte[] nonceBytes = ByteUtils.clone(decodeNonceBytes);
-            return nonceBytes;
-        } finally {
-            incrementDecodeNonce();
+        if (decodeNonceBytes == null) {
+            decodeNonceBytes = new byte[getNonceSize()];
         }
+        return ByteUtils.clone(decodeNonceBytes);
     }
 
     // increment little-endian encoded unsigned integer b. Wrap around on overflow.
-    private void incrementDecodeNonce() {
-        for (int i = 0; i < decodeNonceBytes.length; i++) {
-            decodeNonceBytes[i]++;
-            if (decodeNonceBytes[i] != 0) {
-                break;
-            }
-        }
-    }
-
-    // increment little-endian encoded unsigned integer b. Wrap around on overflow.
-    private void incrementEncodeNonce() {
-        for (int i = 0; i < encodeNonceBytes.length; i++) {
-            encodeNonceBytes[i]++;
-            if (encodeNonceBytes[i] != 0) {
+    private void incrementNonce(byte[] nonce) {
+        for (int i = 0; i < nonce.length; i++) {
+            nonce[i]++;
+            if (nonce[i] != 0) {
                 break;
             }
         }

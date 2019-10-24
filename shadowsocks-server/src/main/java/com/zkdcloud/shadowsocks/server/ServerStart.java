@@ -42,11 +42,11 @@ public class ServerStart {
     /**
      * boosLoopGroup
      */
-    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getBossThreadNumber());
+    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(1);
     /**
      * worksLoopGroup
      */
-    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getWorkersThreadNumber());
+    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(1);
     /**
      * serverBootstrap
      */

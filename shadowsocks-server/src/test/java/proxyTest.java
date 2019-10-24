@@ -39,12 +39,12 @@ public class proxyTest {
         System.out.println("secret2 : ");
         print(secret2);
 
-        byte[] afterDecBytes = aes128CfbCipher.decodeSSBytes(secret1);
+//        byte[] afterDecBytes = aes128CfbCipher.decodeSSBytes(secret1);
         System.out.println("after : ");
-        print(afterDecBytes);
-        byte[] afterDecBytes2 = aes128CfbCipher.decodeSSBytes(secret2);
+//        print(afterDecBytes);
+//        byte[] afterDecBytes2 = aes128CfbCipher.decodeSSBytes(secret2);
         System.out.println("after2 : ");
-        print(afterDecBytes2);
+//        print(afterDecBytes2);
     }
 
     public void print(byte[] bytes) {
