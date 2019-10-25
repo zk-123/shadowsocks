@@ -1,6 +1,8 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.outbound;
 
 import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
+import com.zkdcloud.shadowsocks.common.cipher.aead.SSAeadCipher;
+import com.zkdcloud.shadowsocks.common.cipher.aead.SSAeadCipherWrapper;
 import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -16,16 +18,20 @@ import java.util.List;
  * @since 2018/8/14
  */
 public class EncodeCipherStreamOutHandler extends MessageToMessageEncoder<ByteBuf> {
+    private SSCipher ssCipherWrapper;
     @Override
     protected void encode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
-        SSCipher cipher = ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get();
+        if(ssCipherWrapper == null){
+            SSCipher cipher = ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get();
+            ssCipherWrapper = new SSAeadCipherWrapper((SSAeadCipher) cipher);
+        }
 
         byte[] realData = new byte[msg.readableBytes()];
         msg.getBytes(0, realData);
 
         byte[] resultData = new byte[0];
         try {
-            resultData = cipher.encodeSSBytes(realData);
+            resultData = ssCipherWrapper.encodeSSBytes(realData);
         } catch (Exception e) {
             e.printStackTrace();
         }

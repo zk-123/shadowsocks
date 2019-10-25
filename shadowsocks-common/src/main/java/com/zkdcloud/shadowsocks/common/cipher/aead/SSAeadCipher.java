@@ -47,7 +47,6 @@ public class SSAeadCipher implements SSCipher {
         int readIndex = 0;
         if (decodeSubKey == null) {
             if (getSaltSize() > secretBytes.length) {
-                System.out.println("长度不够0");
                 throw new IncompleteDealException(null, 0);
             }
             byte[] salt = new byte[getSaltSize()];
@@ -60,15 +59,13 @@ public class SSAeadCipher implements SSCipher {
         while (readIndex < secretBytes.length) {
             //decode payload length
             if (readIndex + 2 + getTagSize() > secretBytes.length) {
-                System.out.println("长度不够1");
                 throw new IncompleteDealException(ByteBufUtil.getBytes(originBytesSummary), readIndex);
             }
             byte[] secretLength = new byte[2 + getTagSize()];
             System.arraycopy(secretBytes, readIndex, secretLength, 0, secretLength.length);
             int originLength = HeapByteBufUtil.getShort(aeDecodeBytes(secretLength), 0);
 
-            if (readIndex + secretLength.length +  originLength + getTagSize() > secretBytes.length) {
-                System.out.println("长度不够2");
+            if (readIndex + secretLength.length + originLength + getTagSize() > secretBytes.length) {
                 throw new IncompleteDealException(ByteBufUtil.getBytes(originBytesSummary), readIndex);
             }
             incrementNonce(decodeNonceBytes);
@@ -76,11 +73,8 @@ public class SSAeadCipher implements SSCipher {
 
             //decode payload
             byte[] secretPayload = new byte[originLength + getTagSize()];
-            try {
-                System.arraycopy(secretBytes, readIndex, secretPayload, 0, secretPayload.length);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            System.arraycopy(secretBytes, readIndex, secretPayload, 0, secretPayload.length);
+
             byte[] originPayload = aeDecodeBytes(secretPayload);
             incrementNonce(decodeNonceBytes);
             readIndex += secretPayload.length;
@@ -101,6 +95,7 @@ public class SSAeadCipher implements SSCipher {
         //encode payload length
         byte[] originLengthBytes = new byte[2];
         HeapByteBufUtil.setShort(originLengthBytes, 0, originBytes.length);
+
         byte[] secretLengthBytes = aeEncodeBytes(originLengthBytes);
         incrementNonce(encodeNonceBytes);
         secretBytesSummary.writeBytes(secretLengthBytes);

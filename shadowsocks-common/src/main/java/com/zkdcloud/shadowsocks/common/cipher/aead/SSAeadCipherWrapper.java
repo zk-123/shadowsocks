@@ -2,6 +2,9 @@ package com.zkdcloud.shadowsocks.common.cipher.aead;
 
 import com.zkdcloud.shadowsocks.common.cipher.IncompleteDealException;
 import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.ByteBufUtil;
+import io.netty.buffer.Unpooled;
 import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
 
 /**
@@ -11,8 +14,11 @@ import org.bouncycastle.pqc.math.linearalgebra.ByteUtils;
  * @since 2019/10/24
  */
 public class SSAeadCipherWrapper implements SSCipher {
+    private static short payloadSizeMask = 0x3FFF;
+
+    private static byte[] EMPTY_BYTES = new byte[]{};
     private SSAeadCipher cipher;
-    private byte[] cumulationSecretBytes;
+    private byte[] cumulationSecretBytes = EMPTY_BYTES;
 
     public SSAeadCipherWrapper(SSAeadCipher cipher) {
         this.cipher = cipher;
@@ -23,30 +29,36 @@ public class SSAeadCipherWrapper implements SSCipher {
         byte[] originBytes;
         try {
             originBytes = cipher.decodeSSBytes(getAndAddCumulation(secretBytes));
-            cumulationSecretBytes = null;
+            cumulationSecretBytes = EMPTY_BYTES;
         } catch (IncompleteDealException e) {
             originBytes = e.getDealBytes();
-            addCumulation(ByteUtils.subArray(secretBytes, e.getDealLength()));
+            addCumulation(e.getDealLength(), secretBytes);
         }
         return originBytes;
     }
 
     @Override
     public byte[] encodeSSBytes(byte[] originBytes) throws Exception {
-        return cipher.encodeSSBytes(originBytes);
+        if(originBytes.length < payloadSizeMask){
+            return cipher.encodeSSBytes(originBytes);
+        }
+
+        ByteBuf resultByteBuf = Unpooled.buffer();
+        int readIndex = 0;
+        while(originBytes.length - readIndex > 0){
+            byte[] sliceOriginBytes = new byte[originBytes.length - readIndex > payloadSizeMask ? payloadSizeMask : originBytes.length - readIndex];
+            System.arraycopy(originBytes, readIndex, sliceOriginBytes,0, sliceOriginBytes.length);
+            resultByteBuf.writeBytes(cipher.encodeSSBytes(sliceOriginBytes));
+            readIndex += sliceOriginBytes.length;
+        }
+        return ByteBufUtil.getBytes(resultByteBuf);
     }
 
     private byte[] getAndAddCumulation(byte[] secretBytes){
-        if(cumulationSecretBytes == null){
-            return secretBytes;
-        }
         return ByteUtils.concatenate(cumulationSecretBytes, secretBytes);
     }
-    private void addCumulation(byte[] bytes){
-        if(cumulationSecretBytes == null){
-            cumulationSecretBytes = bytes;
-        } else {
-            cumulationSecretBytes = ByteUtils.concatenate(cumulationSecretBytes, bytes);
-        }
+    private void addCumulation(int dealLength, byte[] bytes){
+        cumulationSecretBytes = ByteUtils.concatenate(cumulationSecretBytes, bytes);
+        cumulationSecretBytes = ByteUtils.subArray(cumulationSecretBytes, dealLength);
     }
 }
