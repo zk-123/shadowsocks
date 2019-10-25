@@ -1,6 +1,7 @@
 package com.zkdcloud.shadowsocks.common.cipher;
 
 import com.zkdcloud.shadowsocks.common.cipher.aead.SSAeadCipher;
+import com.zkdcloud.shadowsocks.common.cipher.aead.SSAeadCipherWrapper;
 import com.zkdcloud.shadowsocks.common.cipher.stream.SSStreamCipher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -67,7 +68,7 @@ public class CipherProvider {
         if (aeadCiphers.contains(cipherMethodName)) {
             try {
                 Constructor<SSAeadCipher> cipherClazzConstructor = SSAeadCipher.class.getConstructor(String.class, String.class);
-                return cipherClazzConstructor.newInstance(cipherMethodName, password);
+                return new SSAeadCipherWrapper(cipherClazzConstructor.newInstance(cipherMethodName, password));
             } catch (InvocationTargetException | IllegalAccessException | NoSuchMethodException | InstantiationException e) {
                 logger.error("get init cipher fail: {}", e.getMessage());
                 return null;

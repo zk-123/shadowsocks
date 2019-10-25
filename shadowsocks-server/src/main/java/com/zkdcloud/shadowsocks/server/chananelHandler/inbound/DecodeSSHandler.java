@@ -21,26 +21,14 @@ import java.util.List;
  * @author zk
  * @since 2018/8/11
  */
-public class DecodeCipherStreamInHandler extends ReplayingDecoder {
-
-    private SSCipher cipherWrapper;
+public class DecodeSSHandler extends ReplayingDecoder {
 
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         SSCipher cipher = ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get();
-        if(cipherWrapper == null){
-            cipherWrapper = new SSAeadCipherWrapper((SSAeadCipher) cipher);
-        }
+
         byte[] secretBytes = new byte[msg.writerIndex()];
         msg.readBytes(secretBytes);
-
-        byte[] originBytes;
-        try {
-            originBytes = cipherWrapper.decodeSSBytes(secretBytes);
-        } catch (Exception e){
-            e.printStackTrace();
-            return;
-        }
-
+        byte[] originBytes = cipher.decodeSSBytes(secretBytes);
 
         if (originBytes != null && originBytes.length != 0) {
             ByteBuf nextMsg = Unpooled.buffer().writeBytes(originBytes);

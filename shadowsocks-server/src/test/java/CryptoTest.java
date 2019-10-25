@@ -2,7 +2,7 @@ import com.zkdcloud.shadowsocks.common.cipher.stream.SSStreamCipher;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
-import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeSSHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -85,8 +85,7 @@ public class CryptoTest {
     @Test
     public void testRealDecode() throws Exception {
         SSStreamCipher aes128CfbCipher = new SSStreamCipher("aes-128-cfb","123456");
-//        byte[] target = aes128CfbCipher.decodeSSBytes(orginByte);
-        byte[] target = null;
+        byte[] target = aes128CfbCipher.decodeSSBytes(orginByte);
 
         System.out.println("right:");
         for (int i = 0; i < rightByte.length; i++) {
@@ -111,7 +110,7 @@ public class CryptoTest {
 
     @Test
     public void testEmbeddedChannel() {
-        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new CryptInitInHandler(), new DecodeCipherStreamInHandler(), new TcpProxyInHandler());
+        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new CryptInitInHandler(), new DecodeSSHandler(), new TcpProxyInHandler());
 
         ByteBuf byteBuf = Unpooled.buffer().writeBytes(orginByte);
         embeddedChannel.writeInbound(byteBuf);
@@ -166,8 +165,8 @@ public class CryptoTest {
         System.out.println("secret:");
         ShadowsocksUtils.printDebugBytes(secret);
 
-//        byte[] decodeBytes = cipher.decodeSSBytes(secret);
-//        System.out.println("decode bytes");
-//        ShadowsocksUtils.printDebugBytes(decodeBytes);
+        byte[] decodeBytes = cipher.decodeSSBytes(secret);
+        System.out.println("decode bytes");
+        ShadowsocksUtils.printDebugBytes(decodeBytes);
     }
 }

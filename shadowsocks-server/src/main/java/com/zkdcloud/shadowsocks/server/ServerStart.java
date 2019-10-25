@@ -3,9 +3,9 @@ package com.zkdcloud.shadowsocks.server;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
-import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeSSHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
-import com.zkdcloud.shadowsocks.server.chananelHandler.outbound.EncodeCipherStreamOutHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.outbound.EncodeSSOutHandler;
 import com.zkdcloud.shadowsocks.server.config.ServerConfig;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
@@ -42,11 +42,11 @@ public class ServerStart {
     /**
      * boosLoopGroup
      */
-    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(1);
+    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getBossThreadNumber());
     /**
      * worksLoopGroup
      */
-    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(1);
+    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getWorkersThreadNumber());
     /**
      * serverBootstrap
      */
@@ -57,7 +57,7 @@ public class ServerStart {
         startupTCP();
     }
 
-    public static void startupTCP() throws InterruptedException {
+    private static void startupTCP() throws InterruptedException {
         serverBootstrap.group(bossLoopGroup, worksLoopGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<Channel>() {
@@ -66,18 +66,15 @@ public class ServerStart {
                                 .addLast(new IdleStateHandler(ServerConfig.serverConfig.getCriTime(), ServerConfig.serverConfig.getCwiTime(),
                                         ServerConfig.serverConfig.getCaiTime(), TimeUnit.SECONDS))
                                 .addLast(new CryptInitInHandler())
-                                .addLast(new DecodeCipherStreamInHandler())
+                                .addLast(new DecodeSSHandler())
                                 .addLast(new TcpProxyInHandler())
-                                .addLast(new EncodeCipherStreamOutHandler());
+                                .addLast(new EncodeSSOutHandler());
                     }
                 });
-        String localIp = ServerConfig.serverConfig.getLocalAddress();
-        int localPort = ServerConfig.serverConfig.getLocalPort();
+        InetSocketAddress bindAddress = getAddress(ServerConfig.serverConfig.getLocalAddress());
 
-        InetSocketAddress localAddress = "0.0.0.0".equals(localIp) || "::0".equals(localIp) ? new InetSocketAddress(localPort) : new InetSocketAddress(localIp, localPort);
-
-        ChannelFuture channelFuture = serverBootstrap.bind(localAddress).sync();
-        logger.info("shadowsocks server [tcp] running at {}:{}", localAddress.getHostName(), localAddress.getPort());
+        ChannelFuture channelFuture = serverBootstrap.bind(bindAddress).sync();
+        logger.info("ss server [tcp] running at {}", bindAddress.toString());
         channelFuture.channel().closeFuture().sync();
     }
 
@@ -96,10 +93,8 @@ public class ServerStart {
             CommandLineParser commandLineParser = new DefaultParser();
             // help
             OPTIONS.addOption("help","usage help");
-            // address
-            OPTIONS.addOption(Option.builder("d").longOpt("address").argName("ip").required(false).type(String.class).desc("address bind").build());
-            // port
-            OPTIONS.addOption(Option.builder("P").longOpt("port").hasArg(true).type(Integer.class).desc("port bind").build());
+            // address and port
+            OPTIONS.addOption(Option.builder("s").longOpt("address").argName("ip").required(true).type(String.class).desc("address bind").build());
             // password
             OPTIONS.addOption(Option.builder("p").longOpt("password").required().hasArg(true).type(String.class).desc("password of ssserver").build());
             // method
@@ -140,7 +135,7 @@ public class ServerStart {
             }
 
             // address
-            String hostAddress = commandLine.getOptionValue("h") == null || "".equals(commandLine.getOptionValue("h")) ? "0.0.0.0" : commandLine.getOptionValue("h");
+            String hostAddress = commandLine.getOptionValue("s") == null || "".equals(commandLine.getOptionValue("h")) ? "0.0.0.0" : commandLine.getOptionValue("h");
             ServerConfig.serverConfig.setLocalAddress(hostAddress);
             // port
             String portOptionValue = commandLine.getOptionValue("P");
@@ -209,5 +204,14 @@ public class ServerStart {
             printWriter.close();
         }
         return HELP_STRING;
+    }
+
+    private static InetSocketAddress getAddress(String address){
+        if(!address.contains(":")){
+            throw new IllegalArgumentException("illegal address: " + address);
+        }
+        String host = address.substring(0, address.indexOf(":"));
+        int port = Integer.parseInt(address.substring(address.indexOf(":") + 1));
+        return new InetSocketAddress(host, port);
     }
 }

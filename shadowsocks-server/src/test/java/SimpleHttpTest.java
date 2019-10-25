@@ -21,8 +21,8 @@ public class SimpleHttpTest {
 
             //password 123456; method aes-128-cfb
             SSCipher cipher = CipherProvider.getByName("aes-128-cfb", "123456");
-//            byte[] afterByte = cipher.decodeSSBytes(realBytes);
-//            System.out.println("IP类型：" + afterByte[0]);
+            byte[] afterByte = cipher.decodeSSBytes(realBytes);
+            System.out.println("IP类型：" + afterByte[0]);
         }
     }
 }
