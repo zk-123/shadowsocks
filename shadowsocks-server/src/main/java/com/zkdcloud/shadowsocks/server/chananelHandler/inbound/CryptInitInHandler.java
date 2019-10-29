@@ -16,10 +16,6 @@ import org.slf4j.LoggerFactory;
  * @since 2018/8/11
  */
 public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
-    /**
-     * static logger
-     */
-    private static Logger logger = LoggerFactory.getLogger(CryptInitInHandler.class);
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
@@ -29,7 +25,6 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
 
         super.channelRead(ctx, msg);
     }
-
 
     /**
      * init client attribute

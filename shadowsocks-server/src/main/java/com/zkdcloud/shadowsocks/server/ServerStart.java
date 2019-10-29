@@ -2,6 +2,7 @@ package com.zkdcloud.shadowsocks.server;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import com.zkdcloud.shadowsocks.server.chananelHandler.ExceptionDuplexHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeSSHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
@@ -68,7 +69,8 @@ public class ServerStart {
                                 .addLast(new CryptInitInHandler())
                                 .addLast(new DecodeSSHandler())
                                 .addLast(new TcpProxyInHandler())
-                                .addLast(new EncodeSSOutHandler());
+                                .addLast(new EncodeSSOutHandler())
+                                .addLast(new ExceptionDuplexHandler());
                     }
                 });
         InetSocketAddress bindAddress = getAddress(ServerConfig.serverConfig.getLocalAddress());
@@ -81,7 +83,7 @@ public class ServerStart {
 
     private static Options OPTIONS = new Options();
     private static CommandLine commandLine;
-    private static String HELP_STRING = null;
+
     /**
      * init args
      *
@@ -92,13 +94,14 @@ public class ServerStart {
         {
             CommandLineParser commandLineParser = new DefaultParser();
             // help
-            OPTIONS.addOption("help","usage help");
+            OPTIONS.addOption("h", "usage help");
+            OPTIONS.addOption("help", "usage full help");
             // address and port
-            OPTIONS.addOption(Option.builder("s").longOpt("address").argName("ip").required(true).type(String.class).desc("address bind").build());
+            OPTIONS.addOption(Option.builder("s").longOpt("address").argName("ip:port").type(String.class).desc("address bind").build());
             // password
-            OPTIONS.addOption(Option.builder("p").longOpt("password").required().hasArg(true).type(String.class).desc("password of ssserver").build());
+            OPTIONS.addOption(Option.builder("p").longOpt("password").hasArg(true).type(String.class).desc("password of ssserver").build());
             // method
-            OPTIONS.addOption(Option.builder("m").longOpt("method").required().hasArg(true).type(String.class).desc("encrypt method").build());
+            OPTIONS.addOption(Option.builder("m").longOpt("method").hasArg(true).type(String.class).desc("encrypt method").build());
 
             // number of boss thread
             OPTIONS.addOption(Option.builder("bn").longOpt("boss_number").hasArg(true).type(Integer.class).desc("boss thread number").build());
@@ -122,28 +125,39 @@ public class ServerStart {
             try {
                 commandLine = commandLineParser.parse(OPTIONS, args);
             } catch (ParseException e) {
-                logger.error(e.getMessage() + "\n" + getHelpString());
+                logger.error(e.getMessage() + "\n" + getShortHelpString());
                 System.exit(0);
             }
         }
 
         // init serverConfigure
         {
-            if(commandLine.hasOption("help")){
-                logger.error("\n" + getHelpString());
+            if (commandLine.hasOption("h")) {
+                logger.info("\n" + getShortHelpString());
+                System.exit(1);
+            }
+            if (commandLine.hasOption("help")) {
+                logger.info("\n" + getFullHelpString());
                 System.exit(1);
             }
 
             // address
-            String hostAddress = commandLine.getOptionValue("s") == null || "".equals(commandLine.getOptionValue("h")) ? "0.0.0.0" : commandLine.getOptionValue("h");
-            ServerConfig.serverConfig.setLocalAddress(hostAddress);
-            // port
-            String portOptionValue = commandLine.getOptionValue("P");
-            int port = portOptionValue == null || "".equals(portOptionValue) ? 1080 : Integer.parseInt(portOptionValue);
-            ServerConfig.serverConfig.setLocalPort(port);
+            if (commandLine.getOptionValue("s") == null || "".equals(commandLine.getOptionValue("s"))) {
+                logger.info("server address is required\n" + getShortHelpString());
+                System.exit(1);
+            }
+            ServerConfig.serverConfig.setLocalAddress(commandLine.getOptionValue("s"));
             // password
+            if (commandLine.getOptionValue("p") == null || "".equals(commandLine.getOptionValue("p"))) {
+                logger.info("server password is required\n" + getShortHelpString());
+                System.exit(1);
+            }
             ServerConfig.serverConfig.setPassword(commandLine.getOptionValue("p"));
             // method
+            if (commandLine.getOptionValue("m") == null || "".equals(commandLine.getOptionValue("m"))) {
+                logger.info("method is required\n" + getShortHelpString());
+                System.exit(1);
+            }
             ServerConfig.serverConfig.setMethod(commandLine.getOptionValue("m"));
 
             // boss thread number
@@ -172,8 +186,8 @@ public class ServerStart {
             ServerConfig.serverConfig.setRaiTime(Long.valueOf(remoteAllIdleTime));
 
             String levelName = commandLine.getOptionValue("level");
-            if(levelName != null && !"".equals(levelName)){
-                Level level = Level.toLevel(levelName,Level.INFO);
+            if (levelName != null && !"".equals(levelName)) {
+                Level level = Level.toLevel(levelName, Level.INFO);
                 logger.info("set log level to " + level.toString());
 
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
@@ -187,27 +201,51 @@ public class ServerStart {
     }
 
     /**
+     * get string of short  help usage
+     *
+     * @return help string
+     */
+    private static String getShortHelpString() {
+        HelpFormatter helpFormatter = new HelpFormatter();
+
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
+
+        Options shortOptions = new Options();
+        shortOptions.addOption(OPTIONS.getOption("s"));
+        shortOptions.addOption(OPTIONS.getOption("p"));
+        shortOptions.addOption(OPTIONS.getOption("m"));
+        shortOptions.addOption(OPTIONS.getOption("h"));
+        shortOptions.addOption(OPTIONS.getOption("help"));
+
+        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks.jar -h", null,
+                shortOptions, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
+        printWriter.flush();
+        String result = new String(byteArrayOutputStream.toByteArray());
+        printWriter.close();
+        return result;
+    }
+
+    /**
      * get string of help usage
      *
      * @return help string
      */
-    private static String getHelpString() {
-        if (HELP_STRING == null) {
-            HelpFormatter helpFormatter = new HelpFormatter();
+    private static String getFullHelpString() {
+        HelpFormatter helpFormatter = new HelpFormatter();
 
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
-            helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks-xxx.jar -help", null,
-                    OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
-            printWriter.flush();
-            HELP_STRING = new String(byteArrayOutputStream.toByteArray());
-            printWriter.close();
-        }
-        return HELP_STRING;
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
+        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks.jar -help", null,
+                OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
+        printWriter.flush();
+        String result = new String(byteArrayOutputStream.toByteArray());
+        printWriter.close();
+        return result;
     }
 
-    private static InetSocketAddress getAddress(String address){
-        if(!address.contains(":")){
+    private static InetSocketAddress getAddress(String address) {
+        if (!address.contains(":")) {
             throw new IllegalArgumentException("illegal address: " + address);
         }
         String host = address.substring(0, address.indexOf(":"));

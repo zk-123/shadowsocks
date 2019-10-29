@@ -13,10 +13,6 @@ public class ServerConfig {
      */
     private String localAddress;
     /**
-     * localPort
-     */
-    private int localPort;
-    /**
      * password
      */
     private String password;
@@ -64,14 +60,6 @@ public class ServerConfig {
 
     public void setLocalAddress(String localAddress) {
         this.localAddress = localAddress;
-    }
-
-    public int getLocalPort() {
-        return localPort;
-    }
-
-    public void setLocalPort(int localPort) {
-        this.localPort = localPort;
     }
 
     public String getPassword() {

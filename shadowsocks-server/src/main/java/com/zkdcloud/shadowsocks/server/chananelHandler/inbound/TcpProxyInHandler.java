@@ -207,24 +207,4 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
             }
         });
     }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause){
-        cause.printStackTrace();
-        logger.error("channelId:{}, cause:", ctx.channel().id(), cause);
-        ctx.channel().close();
-    }
-
-    @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        if (evt instanceof IdleStateEvent) {
-            if (logger.isDebugEnabled()) {
-                logger.debug("client [{}] idleStateEvent happened [{}]", ctx.channel().id(), ((IdleStateEvent) evt).state().name());
-            }
-            closeClientChannel();
-            closeRemoteChannel();
-            return;
-        }
-        super.userEventTriggered(ctx, evt);
-    }
 }
