@@ -62,7 +62,7 @@ public class ServerStart {
         serverBootstrap.group(bossLoopGroup, worksLoopGroup)
                 .channel(NioServerSocketChannel.class)
                 .childHandler(new ChannelInitializer<Channel>() {
-                    protected void initChannel(Channel ch) throws Exception {
+                    protected void initChannel(Channel ch) {
                         ch.pipeline()
                                 .addLast(new IdleStateHandler(ServerConfig.serverConfig.getCriTime(), ServerConfig.serverConfig.getCwiTime(),
                                         ServerConfig.serverConfig.getCaiTime(), TimeUnit.SECONDS))
@@ -97,7 +97,7 @@ public class ServerStart {
             OPTIONS.addOption("h", "usage help");
             OPTIONS.addOption("help", "usage full help");
             // address and port
-            OPTIONS.addOption(Option.builder("s").longOpt("address").argName("ip:port").type(String.class).desc("address bind").build());
+            OPTIONS.addOption(Option.builder("s").longOpt("address").hasArg(true).type(String.class).desc("address bind").build());
             // password
             OPTIONS.addOption(Option.builder("p").longOpt("password").hasArg(true).type(String.class).desc("password of ssserver").build());
             // method

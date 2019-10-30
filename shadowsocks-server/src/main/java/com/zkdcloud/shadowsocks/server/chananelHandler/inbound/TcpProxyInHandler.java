@@ -1,6 +1,7 @@
 package com.zkdcloud.shadowsocks.server.chananelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
+import com.zkdcloud.shadowsocks.server.chananelHandler.ExceptionDuplexHandler;
 import com.zkdcloud.shadowsocks.server.config.ServerConfig;
 import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.bootstrap.Bootstrap;
@@ -18,6 +19,9 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static com.zkdcloud.shadowsocks.server.config.ServerContextConstant.CLIENT_CHANNEL;
+import static com.zkdcloud.shadowsocks.server.config.ServerContextConstant.REMOTE_CHANNEL;
 
 /**
  * proxy handler
@@ -69,8 +73,8 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                         @Override
                         protected void initChannel(Channel ch) {
                             ch.pipeline()
-                                    .addLast("timeout", new IdleStateHandler(ServerConfig.serverConfig.getRriTime(), ServerConfig.serverConfig.getRwiTime(), ServerConfig.serverConfig.getRaiTime(), TimeUnit.SECONDS))
-                                    .addLast("transfer", new SimpleChannelInboundHandler<ByteBuf>() {
+                                    .addLast(new IdleStateHandler(ServerConfig.serverConfig.getRriTime(), ServerConfig.serverConfig.getRwiTime(), ServerConfig.serverConfig.getRaiTime(), TimeUnit.SECONDS))
+                                    .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {
                                             clientCtx.channel().writeAndFlush(msg.retain());
@@ -87,36 +91,17 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                                                 remoteChannel = null;
                                             }
                                         }
-
-                                        @Override
-                                        public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                                            cause.printStackTrace();
-                                            logger.error("remote channel [{}], cause:{}", ctx.channel().id(), cause.getMessage());
-                                            closeRemoteChannel();
-                                            closeClientChannel();
-                                        }
-
-                                        @Override
-                                        public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-                                            if (evt instanceof IdleStateEvent) {
-                                                if (logger.isDebugEnabled()) {
-                                                    logger.debug("remote [{}] [{}] state:{} happened", remoteChannel.id(), remoteAddress.toString(), ((IdleStateEvent) evt).state().name());
-                                                }
-                                                closeClientChannel();
-                                                closeRemoteChannel();
-                                                return;
-                                            }
-                                            super.userEventTriggered(ctx, evt);
-                                        }
-                                    });
+                                    }).addLast(new ExceptionDuplexHandler());
                         }
                     });
 
             bootstrap.connect(remoteAddress).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     remoteChannel = future.channel();
+                    clientChannel.attr(REMOTE_CHANNEL).setIfAbsent(future.channel());
+                    remoteChannel.attr(CLIENT_CHANNEL).setIfAbsent(clientChannel);
 
-                    logger.info("host: [{}:{}] connect success, client channelId is [{}],  remote channelId is [{}]", remoteAddress.getHostName(), remoteAddress.getPort(), clientChannel.id(), remoteChannel.id());
+                    logger.info("host: [{}:{}] connect success, channelId [{}<->{}]", remoteAddress.getHostName(), remoteAddress.getPort(), clientChannel.id(), remoteChannel.id());
                     clientBuffs.add(msg.retain());
                     writeAndFlushByteBufList();
                 } else {
@@ -196,8 +181,11 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
         bootstrap.connect(remoteAddress).addListener((ChannelFutureListener) future -> {
             if (future.isSuccess()) {
                 remoteChannel = future.channel();
+                clientChannel.attr(REMOTE_CHANNEL).setIfAbsent(future.channel());
+                remoteChannel.attr(CLIENT_CHANNEL).setIfAbsent(clientChannel);
+
                 if (logger.isDebugEnabled()) {
-                    logger.debug("host: {}:{} reconnect success, remote channelId is {}", remoteAddress.getHostName(), remoteAddress.getPort(), remoteChannel.id());
+                    logger.debug("host: [{}:{}] reconnect success, remote channelId is [{}]", remoteAddress.getHostName(), remoteAddress.getPort(), remoteChannel.id());
                 }
                 writeAndFlushByteBufList();
             } else {
