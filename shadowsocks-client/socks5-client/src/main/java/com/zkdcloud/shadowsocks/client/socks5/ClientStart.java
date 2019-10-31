@@ -135,6 +135,7 @@ public class ClientStart {
                 ClientConfig.clientConfig.setMethod(commandLine.getOptionValue("m"));
                 System.exit(1);
             }
+            ClientConfig.clientConfig.setMethod(commandLine.getOptionValue("m"));
             // local address
             ClientConfig.clientConfig.setLocal(StringUtil.isNullOrEmpty(commandLine.getOptionValue("c")) ? "0.0.0.0:1080" : commandLine.getOptionValue("c"));
             // boss thread number

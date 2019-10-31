@@ -1,4 +1,4 @@
-package com.zkdcloud.shadowsocks.common.cipher;
+package com.zkdcloud.shadowsocks.common.cipher.exception;
 
 /**
  * description

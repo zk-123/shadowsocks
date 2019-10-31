@@ -6,7 +6,7 @@ import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.ReplayingDecoder;
+import io.netty.handler.codec.ByteToMessageDecoder;
 
 import java.net.InetSocketAddress;
 import java.util.List;
@@ -17,12 +17,12 @@ import java.util.List;
  * @author zk
  * @since 2018/8/11
  */
-public class DecodeSSHandler extends ReplayingDecoder {
+public class DecodeSSHandler extends ByteToMessageDecoder {
 
     protected void decode(ChannelHandlerContext ctx, ByteBuf msg, List<Object> out) throws Exception {
         SSCipher cipher = ctx.channel().attr(ServerContextConstant.SERVER_CIPHER).get();
 
-        byte[] secretBytes = new byte[msg.writerIndex()];
+        byte[] secretBytes = new byte[msg.readableBytes()];
         msg.readBytes(secretBytes);
         byte[] originBytes = cipher.decodeSSBytes(secretBytes);
 

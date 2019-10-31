@@ -75,7 +75,7 @@ public class ServerStart {
         InetSocketAddress bindAddress = getAddress(ServerConfig.serverConfig.getLocalAddress());
 
         ChannelFuture channelFuture = serverBootstrap.bind(bindAddress).sync();
-        logger.info("ss server [tcp] running at {}", bindAddress.toString());
+        logger.info("shadowsocks server [tcp] running at {}", bindAddress.toString());
         channelFuture.channel().closeFuture().sync();
     }
 
