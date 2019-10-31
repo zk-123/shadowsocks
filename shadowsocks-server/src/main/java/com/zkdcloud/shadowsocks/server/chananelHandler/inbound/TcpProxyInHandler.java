@@ -73,7 +73,7 @@ public class TcpProxyInHandler extends SimpleChannelInboundHandler<ByteBuf> {
                         @Override
                         protected void initChannel(Channel ch) {
                             ch.pipeline()
-                                    .addLast(new IdleStateHandler(ServerConfig.serverConfig.getRriTime(), ServerConfig.serverConfig.getRwiTime(), ServerConfig.serverConfig.getRaiTime(), TimeUnit.SECONDS))
+                                    .addLast(new IdleStateHandler(0, 0, ServerConfig.serverConfig.getRemoteIdle(), TimeUnit.SECONDS))
                                     .addLast(new SimpleChannelInboundHandler<ByteBuf>() {
                                         @Override
                                         protected void channelRead0(ChannelHandlerContext ctx, ByteBuf msg) {

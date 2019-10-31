@@ -29,30 +29,13 @@ public class ServerConfig {
      */
     private int workersThreadNumber;
     /**
-     * client readIdle time(second)
+     * client idle time(second)
      */
-    private long criTime;
+    private long clientIdle;
     /**
-     * client readIdle time(second)
+     * remote idle time(second)
      */
-    private long cwiTime;
-    /**
-     * client allIdle time(second)
-     */
-    private long caiTime;
-    /**
-     * remote readIdle time(second)
-     */
-    private long rriTime;
-    /**
-     * remote readIdle time(second)
-     */
-    private long rwiTime;
-    /**
-     * remote allIdle time(second)
-     */
-    private long raiTime;
-
+    private long remoteIdle;
 
     public String getLocalAddress() {
         return localAddress;
@@ -94,51 +77,19 @@ public class ServerConfig {
         this.workersThreadNumber = workersThreadNumber;
     }
 
-    public long getCriTime() {
-        return criTime;
+    public long getClientIdle() {
+        return clientIdle;
     }
 
-    public void setCriTime(long criTime) {
-        this.criTime = criTime;
+    public void setClientIdle(long clientIdle) {
+        this.clientIdle = clientIdle;
     }
 
-    public long getCwiTime() {
-        return cwiTime;
+    public long getRemoteIdle() {
+        return remoteIdle;
     }
 
-    public void setCwiTime(long cwiTime) {
-        this.cwiTime = cwiTime;
-    }
-
-    public long getCaiTime() {
-        return caiTime;
-    }
-
-    public void setCaiTime(long caiTime) {
-        this.caiTime = caiTime;
-    }
-
-    public long getRriTime() {
-        return rriTime;
-    }
-
-    public void setRriTime(long rriTime) {
-        this.rriTime = rriTime;
-    }
-
-    public long getRwiTime() {
-        return rwiTime;
-    }
-
-    public void setRwiTime(long rwiTime) {
-        this.rwiTime = rwiTime;
-    }
-
-    public long getRaiTime() {
-        return raiTime;
-    }
-
-    public void setRaiTime(long raiTime) {
-        this.raiTime = raiTime;
+    public void setRemoteIdle(long remoteIdle) {
+        this.remoteIdle = remoteIdle;
     }
 }

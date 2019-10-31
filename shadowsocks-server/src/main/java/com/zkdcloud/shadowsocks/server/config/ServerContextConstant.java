@@ -9,11 +9,6 @@ import java.net.InetSocketAddress;
 public class ServerContextConstant {
 
     /**
-     * default idle time out(second)
-     */
-    public static long DEFAULT_IDLE_TIMEOUT_SECOND = 20 * 60;
-
-    /**
      * server cipher
      */
     public static AttributeKey<SSCipher> SERVER_CIPHER = AttributeKey.valueOf("serverCipher");

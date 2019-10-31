@@ -140,7 +140,7 @@ public class Socks5ServerDoorHandler extends ChannelInboundHandlerAdapter {
                     });
 
             //init remote attr and getProxy
-            InetSocketAddress proxyAddress = getProxyAddress();
+            InetSocketAddress proxyAddress = getServerAddress(ClientConfig.clientConfig.getServer());
             remoteBootstrap.connect(proxyAddress).addListener((ChannelFutureListener) future -> {
                 if (future.isSuccess()) {
                     this.remoteChannel = future.channel();
@@ -178,15 +178,6 @@ public class Socks5ServerDoorHandler extends ChannelInboundHandlerAdapter {
         }
     }
 
-    /**
-     * get proxyAddress from config
-     *
-     * @return inetSocketAddress
-     */
-    private InetSocketAddress getProxyAddress() {
-        return new InetSocketAddress(ClientConfig.clientConfig.getServer(),ClientConfig. clientConfig.getServer_port());
-    }
-
     @Override
     public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
         if (evt instanceof IdleStateEvent) {
@@ -194,5 +185,14 @@ public class Socks5ServerDoorHandler extends ChannelInboundHandlerAdapter {
             return;
         }
         super.userEventTriggered(ctx, evt);
+    }
+
+    private static InetSocketAddress getServerAddress(String address) {
+        if (!address.contains(":")) {
+            throw new IllegalArgumentException("illegal local address: " + address + ", address format: ip:port");
+        }
+        String host = address.substring(0, address.indexOf(":"));
+        int port = Integer.parseInt(address.substring(address.indexOf(":") + 1));
+        return new InetSocketAddress(host, port);
     }
 }
