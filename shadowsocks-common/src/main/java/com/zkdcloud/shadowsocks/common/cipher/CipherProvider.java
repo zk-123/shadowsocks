@@ -8,7 +8,9 @@ import org.slf4j.LoggerFactory;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -75,5 +77,12 @@ public class CipherProvider {
             }
         }
         return null;
+    }
+
+    public static List<String> getSupportCiphersNames(){
+        List<String> result = new ArrayList<>(streamCiphers.size() + aeadCiphers.size());
+        result.addAll(streamCiphers);
+        result.addAll(aeadCiphers);
+        return result;
     }
 }

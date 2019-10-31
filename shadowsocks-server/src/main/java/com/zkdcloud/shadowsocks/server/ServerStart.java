@@ -2,6 +2,9 @@ package com.zkdcloud.shadowsocks.server;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.core.ConsoleAppender;
+import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
 import com.zkdcloud.shadowsocks.server.chananelHandler.ExceptionDuplexHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeSSHandler;
@@ -94,22 +97,22 @@ public class ServerStart {
             CommandLineParser commandLineParser = new DefaultParser();
 
             // address and port
-            OPTIONS.addOption(Option.builder("s").longOpt("address").hasArg(true).type(String.class).desc("server listen address").build());
+            OPTIONS.addOption(Option.builder("s").longOpt("address").argName("ip:port").hasArg(true).type(String.class).desc("server listen address. e.g: ip:port").build());
             // password
-            OPTIONS.addOption(Option.builder("p").longOpt("password").hasArg(true).type(String.class).desc("password").build());
+            OPTIONS.addOption(Option.builder("p").longOpt("password").argName("password").hasArg(true).type(String.class).desc("password").build());
             // method
-            OPTIONS.addOption(Option.builder("m").longOpt("method").hasArg(true).type(String.class).desc("encrypt method").build());
+            OPTIONS.addOption(Option.builder("m").longOpt("method").argName("methodName").hasArg(true).type(String.class).desc("encrypt method. support method: " + CipherProvider.getSupportCiphersNames()).build());
 
             // number of boss thread
-            OPTIONS.addOption(Option.builder("bn").longOpt("boss_number").hasArg(true).type(Integer.class).desc("boss thread number").build());
+            OPTIONS.addOption(Option.builder("bn").longOpt("boss_number").argName("proc*2").hasArg(true).type(Integer.class).desc("boss thread number").build());
             // number of workers thread
-            OPTIONS.addOption(Option.builder("wn").longOpt("workers_number").hasArg(true).type(Integer.class).desc("workers thread number").build());
+            OPTIONS.addOption(Option.builder("wn").longOpt("workers_number").argName("proc*2").hasArg(true).type(Integer.class).desc("workers thread number").build());
             // client idleTime(second)
-            OPTIONS.addOption(Option.builder("ci").longOpt("client_idle").hasArg(true).type(Long.class).desc("client idle time(second), default 600").build());
+            OPTIONS.addOption(Option.builder("ci").longOpt("client_idle").argName("600").hasArg(true).type(Long.class).desc("client idle time(second), default 600").build());
             // remote idleTime(second)
-            OPTIONS.addOption(Option.builder("ri").longOpt("remote_idle").hasArg(true).type(Long.class).desc("remote idle time(second), default 600").build());
+            OPTIONS.addOption(Option.builder("ri").longOpt("remote_idle").argName("600").hasArg(true).type(Long.class).desc("remote idle time(second), default 600").build());
             // set log level
-            OPTIONS.addOption(Option.builder("level").longOpt("log_level").hasArg(true).type(String.class).desc("log level").build());
+            OPTIONS.addOption(Option.builder("level").longOpt("log_level").argName("INFO").hasArg(true).type(String.class).desc("log level").build());
             // help
             OPTIONS.addOption("h", "usage help");
             OPTIONS.addOption("help", "usage full help");
@@ -173,6 +176,9 @@ public class ServerStart {
                 List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
                 for (ch.qos.logback.classic.Logger logger1 : loggerList) {
                     logger1.setLevel(level);
+                    if (Level.toLevel(levelName).levelInt < Level.INFO.levelInt) {
+                        ((PatternLayoutEncoder) ((ConsoleAppender) logger1.getAppender("STDOUT")).getEncoder()).setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} %line - %msg%n");
+                    }
                 }
             }
         }
@@ -198,7 +204,7 @@ public class ServerStart {
         shortOptions.addOption(OPTIONS.getOption("h"));
         shortOptions.addOption(OPTIONS.getOption("help"));
 
-        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks.jar -h", null,
+        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks.jar -h", null,
                 shortOptions, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
         String result = new String(byteArrayOutputStream.toByteArray());
@@ -217,7 +223,7 @@ public class ServerStart {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
-        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH, "java -jar shadowsocks.jar -help", null,
+        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks.jar -help", null,
                 OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
         String result = new String(byteArrayOutputStream.toByteArray());
