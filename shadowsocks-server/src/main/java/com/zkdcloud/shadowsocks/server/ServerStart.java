@@ -2,6 +2,7 @@ package com.zkdcloud.shadowsocks.server;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.classic.PatternLayout;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
 import ch.qos.logback.core.ConsoleAppender;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
@@ -177,7 +178,12 @@ public class ServerStart {
                 for (ch.qos.logback.classic.Logger logger1 : loggerList) {
                     logger1.setLevel(level);
                     if (Level.toLevel(levelName).levelInt < Level.INFO.levelInt) {
-                        ((PatternLayoutEncoder) ((ConsoleAppender) logger1.getAppender("STDOUT")).getEncoder()).setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} %line - %msg%n");
+                        if(logger1.getAppender("STDOUT") != null){
+                            PatternLayout patternLayout = (PatternLayout) ((PatternLayoutEncoder) ((ConsoleAppender) logger1.getAppender("STDOUT")).getEncoder()).getLayout();
+                            patternLayout.start();
+                            patternLayout.setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} % line - %msg%n");
+                            ((PatternLayoutEncoder) ((ConsoleAppender) logger1.getAppender("STDOUT")).getEncoder()).setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} %line - %msg%n");
+                        }
                     }
                 }
             }
