@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.common.cipher.aead;
 
-import com.zkdcloud.shadowsocks.common.cipher.exception.IncompleteDealException;
 import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
+import com.zkdcloud.shadowsocks.common.cipher.exception.IncompleteDealException;
 import com.zkdcloud.shadowsocks.common.util.HeapByteBufUtil;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import io.netty.buffer.ByteBuf;

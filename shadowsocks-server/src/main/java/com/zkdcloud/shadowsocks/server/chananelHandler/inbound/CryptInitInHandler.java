@@ -6,8 +6,6 @@ import com.zkdcloud.shadowsocks.server.config.ServerConfig;
 import com.zkdcloud.shadowsocks.server.config.ServerContextConstant;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * init crypt

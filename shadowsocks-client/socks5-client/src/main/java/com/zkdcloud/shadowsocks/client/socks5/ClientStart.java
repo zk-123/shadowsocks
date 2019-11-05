@@ -21,7 +21,6 @@ import org.slf4j.LoggerFactory;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.net.InetSocketAddress;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -154,17 +153,27 @@ public class ClientStart {
             ClientConfig.clientConfig.setIdleTime(StringUtil.isNullOrEmpty(commandLine.getOptionValue("i")) ? 600 : Integer.valueOf(commandLine.getOptionValue("i")));
             // log level
             String levelName = commandLine.getOptionValue("level");
-            if (levelName != null && !"".equals(levelName)) {
+            if (StringUtil.isNullOrEmpty(levelName)) {
                 Level level = Level.toLevel(levelName, Level.INFO);
                 logger.info("set log level to " + level.toString());
 
                 LoggerContext loggerContext = (LoggerContext) LoggerFactory.getILoggerFactory();
-                List<ch.qos.logback.classic.Logger> loggerList = loggerContext.getLoggerList();
-                for (ch.qos.logback.classic.Logger logger1 : loggerList) {
-                    logger1.setLevel(level);
-                    if (Level.toLevel(levelName).levelInt < Level.INFO.levelInt) {
-                        ((PatternLayoutEncoder) ((ConsoleAppender) logger1.getAppender("STDOUT")).getEncoder()).setPattern("%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} %line - %msg%n");
-                    }
+                ch.qos.logback.classic.Logger rootLogger = loggerContext.getLogger("ROOT");
+                rootLogger.setLevel(level);
+                if (Level.toLevel(levelName).levelInt < Level.INFO.levelInt) {
+                    PatternLayoutEncoder ple = new PatternLayoutEncoder();
+                    ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n");
+                    ple.setContext(loggerContext);
+                    ple.start();
+
+                    ConsoleAppender consoleAppender = new ConsoleAppender();
+                    consoleAppender.setEncoder(ple);
+                    consoleAppender.setName("STDOUT");
+                    consoleAppender.setContext(loggerContext);
+                    consoleAppender.start();
+
+                    rootLogger.detachAppender("STDOUT");
+                    rootLogger.addAppender(consoleAppender);
                 }
             }
         }
