@@ -5,12 +5,14 @@
     <parent>
         <artifactId>shadowsocks</artifactId>
         <groupId>com.zkdcloud</groupId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
-    <packaging>pom</packaging>
     <modelVersion>4.0.0</modelVersion>
 
+    <packaging>pom</packaging>
     <artifactId>shadowsocks-client</artifactId>
+    <version>1.1.0</version>
+
 
     <modules>
         <module>socks5-client</module>

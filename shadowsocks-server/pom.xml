@@ -5,11 +5,12 @@
     <parent>
         <artifactId>shadowsocks</artifactId>
         <groupId>com.zkdcloud</groupId>
-        <version>1.0.0</version>
+        <version>1.1.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>shadowsocks-server</artifactId>
+    <version>1.1.0</version>
 
     <dependencies>
         <dependency>
@@ -23,7 +24,7 @@
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
-                    <finalName>shadowsocks-server-${project.version}</finalName>
+                    <finalName>shadowsocks-server</finalName>
                     <appendAssemblyId>false</appendAssemblyId>
                     <archive>
                         <manifest>
