@@ -38,11 +38,11 @@ public class ClientStart {
     /**
      * boosLoopGroup
      */
-    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(1);
+    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ClientConfig.clientConfig.getBossThreadNumber());
     /**
      * worksLoopGroup
      */
-    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(1);
+    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ClientConfig.clientConfig.getBossThreadNumber());
     /**
      * clientBootstrap
      */
