@@ -199,7 +199,7 @@ public class ClientStart {
         shortOptions.addOption(OPTIONS.getOption("h"));
         shortOptions.addOption(OPTIONS.getOption("help"));
 
-        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar socks5.jar -h", null,
+        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks-socks.jar -h", null,
                 shortOptions, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
         String result = new String(byteArrayOutputStream.toByteArray());
@@ -218,7 +218,7 @@ public class ClientStart {
 
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         PrintWriter printWriter = new PrintWriter(byteArrayOutputStream);
-        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar socks5.jar -help", null,
+        helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks-socks.jar -help", null,
                 OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
         String result = new String(byteArrayOutputStream.toByteArray());
