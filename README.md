@@ -1,47 +1,37 @@
 # shadowsocks-server
 usage:
 ```
-java -jar shadowsocks-xxx.jar -p 123456 -m aes-128-cfb 
+java -jar shadowsocks-server.jar -s "0.0.0.0:1080" -p "123456" -m "aes-128-cfb" 
 ```
 
 more :
 ```
-usage: java -jar shadowsocks-xxx.jar -help
- -bn,--boss_number <arg>          boss thread number
- -cai,--client_all_idle <arg>     client allIdle time(second)
- -cri,--client_read_idle <arg>    client readIdle time(second)
- -cwi,--client_write_idle <arg>   client writeIdle time(second)
- -d,--address                     address bind
- -help                            usage help
- -level,--log_level <arg>         log level
- -m,--method <arg>                encrypt method
- -P,--port <arg>                  port bind
- -p,--password <arg>              password of ssserver
- -rai,--remote_all_idle <arg>     remote allIdle time(second)
- -rri,--remote_read_idle <arg>    remote readIdle time(second)
- -rwi,--remote_write_idle <arg>   remote writeIdle time(second)
- -wn,--workers_number <arg>       workers thread number
- 
+usage: java -jar shadowsocks-server.jar -h
+ -s,--address <ip:port>     server listen address. e.g: ip:port
+ -p,--password <password>   password
+ -m,--method <methodName>   encrypt method. support method: [camellia-128-cfb, salsa20, chacha20-ietf, camellia-192-cfb, camellia-256-cfb, chacha20,
+                            aes-128-cfb, aes-256-cfb, rc4-md5, aes-192-cfb, aes-192-gcm, aes-256-gcm, aes-128-gcm]
+ -h                         usage help
+ -help                      usage full help
 ```
-option |  default value| description |
----|---|---
-P | 1080 | ss-server expose port
-p | - | password
-m | - | encrypt method
-d | 0.0.0.0 | bind address
-bn | process number * 2 | boss thread number
-wn | process number * 2 | workers thread number
-cri | 20 * 60 | client readIdle time(second)
-cwi | 20 * 60 | client writeIdle time(second)
-cai | 20 * 60 | client allIdle time(second)
-rri | 20 * 60 | remote readIdle time(second)
-rwi | 20 * 60 | remote writeIdle time(second)
-rai | 20 * 60 | remote allIdle time(second)
-level | INFO | log level
+more options with parameter '-help'
 
+# shadowsocks-client-socks5
 
+usage:
+```
+java -jar shadowsocks-socks.jar -s "127.0.0.1:1088" -p "123456" -m "aes-256-gcm" -c "0.0.0.0:1081"
+```
 
-
-> shadowsocks-server learn from [this](https://github.com/TongxiJi/shadowsocks-java)
-
-# shadowsocks-socks5-client
+more:
+```
+usage: java -jar shadowsocks-socks.jar -h
+ -s,--server_address <ip:port>   server connect address. e.g: ip:port
+ -p,--password <password>        server password
+ -m,--method <methodName>        encrypt method. support method: [camellia-128-cfb, salsa20, chacha20-ietf, camellia-192-cfb, camellia-256-cfb,
+                                 chacha20, aes-128-cfb, aes-256-cfb, rc4-md5, aes-192-cfb, aes-192-gcm, aes-256-gcm, aes-128-gcm]
+ -c,--local_address <ip:port>    local expose address. e.g: 0.0.0.0:1080
+ -h                              usage help
+ -help                           usage full help
+```
+more options with parameter '-help'

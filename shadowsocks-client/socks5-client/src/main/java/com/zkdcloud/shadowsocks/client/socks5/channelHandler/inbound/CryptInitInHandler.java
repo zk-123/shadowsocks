@@ -2,11 +2,10 @@ package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.client.socks5.config.ClientConfig;
 import com.zkdcloud.shadowsocks.client.socks5.config.ClientContextConstant;
-import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.IdleStateEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +43,7 @@ public class CryptInitInHandler extends ChannelInboundHandlerAdapter {
      */
     private void initAttribute(ChannelHandlerContext ctx) {
         // cipher
-        AbstractCipher cipher = CipherProvider.getByName(ClientConfig.clientConfig.getMethod(), ClientConfig.clientConfig.getPassword());
+        SSCipher cipher = CipherProvider.getByName(ClientConfig.clientConfig.getMethod(), ClientConfig.clientConfig.getPassword());
         if (cipher == null) {
             ctx.channel().close();
             throw new IllegalArgumentException("un support server method: " + ClientConfig.clientConfig.getMethod());

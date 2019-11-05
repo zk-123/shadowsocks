@@ -1,7 +1,7 @@
 package com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound;
 
 import com.zkdcloud.shadowsocks.client.socks5.config.ClientContextConstant;
-import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
@@ -61,7 +61,7 @@ public class TransferFlowHandler extends SimpleChannelInboundHandler<ByteBuf> {
      * @param message message
      * @return byteBuf
      */
-    private ByteBuf getCryptMessage(ByteBuf message) {
+    private ByteBuf getCryptMessage(ByteBuf message) throws Exception {
         try {
             ByteBuf willEncodeMessage = clientChannel.alloc().heapBuffer();
 
@@ -108,16 +108,16 @@ public class TransferFlowHandler extends SimpleChannelInboundHandler<ByteBuf> {
      * @param willEncodeMessage willEncoding Message
      * @return after entry message
      */
-    private ByteBuf cryptMessage(ByteBuf willEncodeMessage) {
+    private ByteBuf cryptMessage(ByteBuf willEncodeMessage) throws Exception {
         try {
             ByteBuf result = clientChannel.alloc().heapBuffer();
 
-            AbstractCipher cipher = clientChannel.attr(ClientContextConstant.SOCKS5_CLIENT_CIPHER).get();
+            SSCipher cipher = clientChannel.attr(ClientContextConstant.SOCKS5_CLIENT_CIPHER).get();
             byte[] originBytes = new byte[willEncodeMessage.readableBytes()];
             willEncodeMessage.readBytes(originBytes);
 
             //entry
-            byte[] secretBytes = cipher.encodeBytes(originBytes);
+            byte[] secretBytes = cipher.encodeSSBytes(originBytes);
 
             result.writeBytes(secretBytes);
             return result;

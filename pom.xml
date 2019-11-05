@@ -7,10 +7,10 @@
     <groupId>com.zkdcloud</groupId>
     <artifactId>shadowsocks</artifactId>
     <packaging>pom</packaging>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
 
     <properties>
-        <shadowsocks.common.version>1.0.0</shadowsocks.common.version>
+        <shadowsocks.common.version>1.1.0</shadowsocks.common.version>
     </properties>
 
     <modules>

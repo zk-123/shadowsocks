@@ -1,6 +1,6 @@
 package com.zkdcloud.shadowsocks.client.socks5.config;
 
-import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
+import com.zkdcloud.shadowsocks.common.cipher.SSCipher;
 import io.netty.channel.Channel;
 import io.netty.util.AttributeKey;
 
@@ -11,7 +11,7 @@ public class ClientContextConstant {
     /**
      * socks5 client cipher
      */
-    public static AttributeKey<AbstractCipher> SOCKS5_CLIENT_CIPHER = AttributeKey.valueOf("socks5 client cipher");
+    public static AttributeKey<SSCipher> SOCKS5_CLIENT_CIPHER = AttributeKey.valueOf("socks5 client cipher");
 
     /**
      * client first encoding flag

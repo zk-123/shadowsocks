@@ -9,17 +9,13 @@ package com.zkdcloud.shadowsocks.client.socks5.config;
 public class ClientConfig {
     public static ClientConfig clientConfig = new ClientConfig();
     /**
-     * server ip
+     * server address
      */
     private String server;
     /**
-     * server port
+     * local address
      */
-    private int server_port;
-    /**
-     * local port
-     */
-    private int local_port;
+    private String local;
     /**
      * password
      */
@@ -29,21 +25,17 @@ public class ClientConfig {
      */
     private String method;
     /**
-     * plugin
+     * idle seconds
      */
-    private String plugin;
+    private Integer idleTime;
     /**
-     * plugin options
+     * number of boss thread
      */
-    private String plugin_opts;
+    private int bossThreadNumber;
     /**
-     * remarks
+     * number of workers thread
      */
-    private String remarks;
-    /**
-     * timeout seconds
-     */
-    private Long timeout;
+    private int workersThreadNumber;
 
     public String getServer() {
         return server;
@@ -51,22 +43,6 @@ public class ClientConfig {
 
     public void setServer(String server) {
         this.server = server;
-    }
-
-    public int getServer_port() {
-        return server_port;
-    }
-
-    public void setServer_port(int server_port) {
-        this.server_port = server_port;
-    }
-
-    public int getLocal_port() {
-        return local_port;
-    }
-
-    public void setLocal_port(int local_port) {
-        this.local_port = local_port;
     }
 
     public String getPassword() {
@@ -85,35 +61,43 @@ public class ClientConfig {
         this.method = method;
     }
 
-    public String getPlugin() {
-        return plugin;
+    public static ClientConfig getClientConfig() {
+        return clientConfig;
     }
 
-    public void setPlugin(String plugin) {
-        this.plugin = plugin;
+    public static void setClientConfig(ClientConfig clientConfig) {
+        ClientConfig.clientConfig = clientConfig;
     }
 
-    public String getPlugin_opts() {
-        return plugin_opts;
+    public String getLocal() {
+        return local;
     }
 
-    public void setPlugin_opts(String plugin_opts) {
-        this.plugin_opts = plugin_opts;
+    public void setLocal(String local) {
+        this.local = local;
     }
 
-    public String getRemarks() {
-        return remarks;
+    public Integer getIdleTime() {
+        return idleTime;
     }
 
-    public void setRemarks(String remarks) {
-        this.remarks = remarks;
+    public void setIdleTime(Integer idleTime) {
+        this.idleTime = idleTime;
     }
 
-    public Long getTimeout() {
-        return timeout;
+    public int getBossThreadNumber() {
+        return bossThreadNumber;
     }
 
-    public void setTimeout(Long timeout) {
-        this.timeout = timeout;
+    public void setBossThreadNumber(int bossThreadNumber) {
+        this.bossThreadNumber = bossThreadNumber;
+    }
+
+    public int getWorkersThreadNumber() {
+        return workersThreadNumber;
+    }
+
+    public void setWorkersThreadNumber(int workersThreadNumber) {
+        this.workersThreadNumber = workersThreadNumber;
     }
 }

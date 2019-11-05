@@ -1,4 +1,4 @@
-import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.SSStreamCipher;
 import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -27,22 +27,22 @@ public class proxyTest {
     }
 
     @Test
-    public void testEnDe() {
-        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456");
+    public void testEnDe() throws Exception {
+        SSStreamCipher aes128CfbCipher = new SSStreamCipher("123456","aes-128-cfb");
         byte[] orign = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
         System.out.println("origin : ");
         print(orign);
-        byte[] secret1 = aes128CfbCipher.encodeBytes(orign);
+        byte[] secret1 = aes128CfbCipher.encodeSSBytes(orign);
         System.out.println("secret : ");
         print(secret1);
-        byte[] secret2 = aes128CfbCipher.encodeBytes(orign);
+        byte[] secret2 = aes128CfbCipher.encodeSSBytes(orign);
         System.out.println("secret2 : ");
         print(secret2);
 
-        byte[] afterDecBytes = aes128CfbCipher.decodeBytes(Unpooled.wrappedBuffer(secret1));
+        byte[] afterDecBytes = aes128CfbCipher.decodeSSBytes(secret1);
         System.out.println("after : ");
         print(afterDecBytes);
-        byte[] afterDecBytes2 = aes128CfbCipher.decodeBytes(Unpooled.wrappedBuffer(secret2));
+        byte[] afterDecBytes2 = aes128CfbCipher.decodeSSBytes(secret2);
         System.out.println("after2 : ");
         print(afterDecBytes2);
     }

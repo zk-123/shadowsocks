@@ -1,10 +1,8 @@
-import com.zkdcloud.shadowsocks.common.cipher.AbstractCipher;
-import com.zkdcloud.shadowsocks.common.cipher.stream.Aes128CfbCipher;
-import com.zkdcloud.shadowsocks.common.cipher.stream.Rc4Md5Cipher;
+import com.zkdcloud.shadowsocks.common.cipher.stream.SSStreamCipher;
 import com.zkdcloud.shadowsocks.common.util.ShadowsocksUtils;
 import com.zkdcloud.shadowsocks.common.util.SocksIpUtils;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
-import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeCipherStreamInHandler;
+import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeSSHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.TcpProxyInHandler;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
@@ -85,9 +83,9 @@ public class CryptoTest {
     }
 
     @Test
-    public void testRealDecode() {
-        Aes128CfbCipher aes128CfbCipher = new Aes128CfbCipher("123456");
-        byte[] target = aes128CfbCipher.decodeBytes(Unpooled.buffer().writeBytes(orginByte));
+    public void testRealDecode() throws Exception {
+        SSStreamCipher aes128CfbCipher = new SSStreamCipher("aes-128-cfb","123456");
+        byte[] target = aes128CfbCipher.decodeSSBytes(orginByte);
 
         System.out.println("right:");
         for (int i = 0; i < rightByte.length; i++) {
@@ -112,7 +110,7 @@ public class CryptoTest {
 
     @Test
     public void testEmbeddedChannel() {
-        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new CryptInitInHandler(), new DecodeCipherStreamInHandler(), new TcpProxyInHandler());
+        EmbeddedChannel embeddedChannel = new EmbeddedChannel(new CryptInitInHandler(), new DecodeSSHandler(), new TcpProxyInHandler());
 
         ByteBuf byteBuf = Unpooled.buffer().writeBytes(orginByte);
         embeddedChannel.writeInbound(byteBuf);
@@ -158,16 +156,16 @@ public class CryptoTest {
     }
 
     @Test
-    public void testAes129() {
+    public void testAes129() throws Exception {
         byte[] origin = new byte[]{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17};
-        AbstractCipher cipher = new Rc4Md5Cipher("123456");
+        SSStreamCipher cipher = new SSStreamCipher("rc4-md5","123456");
 
         System.out.println(origin.length);
-        byte[] secret = cipher.encodeBytes(origin);
+        byte[] secret = cipher.encodeSSBytes(origin);
         System.out.println("secret:");
         ShadowsocksUtils.printDebugBytes(secret);
 
-        byte[] decodeBytes = cipher.decodeBytes(secret);
+        byte[] decodeBytes = cipher.decodeSSBytes(secret);
         System.out.println("decode bytes");
         ShadowsocksUtils.printDebugBytes(decodeBytes);
     }
