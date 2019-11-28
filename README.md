@@ -35,3 +35,5 @@ usage: java -jar shadowsocks-socks.jar -h
  -help                           usage full help
 ```
 more options with parameter '-help'
+
+[more info wiki](https://github.com/zk-123/shadowsocks/wiki/%E5%AE%98%E6%96%B9%E5%8D%8F%E8%AE%AE)
