@@ -1,3 +1,6 @@
+#Env
++ JDK1.7+
+
 # shadowsocks-server
 usage:
 ```
