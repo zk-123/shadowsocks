@@ -1,3 +1,6 @@
+[![Travis](https://img.shields.io/travis/rust-lang/rust.svg)]()
+[![Scrutinizer](https://img.shields.io/scrutinizer/g/filp/whoops.svg)]()
+
 # Env
 + JDK1.7+
 
