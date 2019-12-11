@@ -1,4 +1,4 @@
-#Env
+# Env
 + JDK1.7+
 
 # shadowsocks-server
