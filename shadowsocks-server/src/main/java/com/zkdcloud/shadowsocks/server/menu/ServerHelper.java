@@ -1,8 +1,9 @@
-package com.zkdcloud.shadowsocks.menu;
+package com.zkdcloud.shadowsocks.server.menu;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
 import com.zkdcloud.shadowsocks.server.config.ServerConfig;
@@ -17,22 +18,22 @@ import java.io.PrintWriter;
 /**
  * @author yuhao
  * @version 5.11.0
- * @date 2021年05月22日 00:53:00
+ * @since 2021年05月22日 00:53:00
  */
 public class ServerHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerHelper.class);
 
-    private CommandLine commandLine;
+    private static final Options OPTIONS = new Options();
 
-    private Options OPTIONS = new Options();
+    private static CommandLine commandLine;
 
-    public void useHelp(String[] args) {
+    public static void useHelp(String[] args) {
         parseArgs(args);
         printHelpMessage();
     }
 
-    private void parseArgs(String[] args) {
+    private static void parseArgs(String[] args) {
         // address and port
         OPTIONS.addOption(Option.builder("s").longOpt("address").argName("ip:port").hasArg(true).type(String.class).desc("server listen address. e.g: ip:port").build());
         // password
@@ -62,7 +63,7 @@ public class ServerHelper {
         }
     }
 
-    private void printHelpMessage() {
+    private static void printHelpMessage() {
         if (commandLine.hasOption("h")) {
             logger.info("\n" + getShortHelpString());
             System.exit(1);
@@ -98,10 +99,10 @@ public class ServerHelper {
         ServerConfig.serverConfig.setWorkersThreadNumber(Integer.parseInt(workersThreadNumber));
         // client readIdle time(second)
         String clientIdleTime = StringUtil.isNullOrEmpty(commandLine.getOptionValue("ci")) ? String.valueOf(600) : commandLine.getOptionValue("ci");
-        ServerConfig.serverConfig.setClientIdle(Long.valueOf(clientIdleTime));
+        ServerConfig.serverConfig.setClientIdle(Long.parseLong(clientIdleTime));
         // remote readIdle time(second)
         String remoteIdleTime = StringUtil.isNullOrEmpty(commandLine.getOptionValue("ri")) ? String.valueOf(600) : commandLine.getOptionValue("ri");
-        ServerConfig.serverConfig.setRemoteIdle(Long.valueOf(remoteIdleTime));
+        ServerConfig.serverConfig.setRemoteIdle(Long.parseLong(remoteIdleTime));
         // log level
         String levelName = commandLine.getOptionValue("level");
         if (StringUtil.isNullOrEmpty(levelName)) {
@@ -117,7 +118,7 @@ public class ServerHelper {
                 ple.setContext(loggerContext);
                 ple.start();
 
-                ConsoleAppender consoleAppender = new ConsoleAppender();
+                ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
                 consoleAppender.setEncoder(ple);
                 consoleAppender.setName("STDOUT");
                 consoleAppender.setContext(loggerContext);
@@ -134,7 +135,7 @@ public class ServerHelper {
      *
      * @return help string
      */
-    private String getShortHelpString() {
+    private static String getShortHelpString() {
         HelpFormatter helpFormatter = new HelpFormatter();
         helpFormatter.setOptionComparator(null);
 
@@ -151,7 +152,7 @@ public class ServerHelper {
         helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks-server.jar -h", null,
                 shortOptions, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
-        String result = new String(byteArrayOutputStream.toByteArray());
+        String result = byteArrayOutputStream.toString();
         printWriter.close();
         return result;
     }
@@ -161,7 +162,7 @@ public class ServerHelper {
      *
      * @return help string
      */
-    private String getFullHelpString() {
+    private static String getFullHelpString() {
         HelpFormatter helpFormatter = new HelpFormatter();
         helpFormatter.setOptionComparator(null);
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -169,7 +170,7 @@ public class ServerHelper {
         helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks-server.jar -help", null,
                 OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
-        String result = new String(byteArrayOutputStream.toByteArray());
+        String result = byteArrayOutputStream.toString();
         printWriter.close();
         return result;
     }

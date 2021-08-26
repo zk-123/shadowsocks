@@ -1,8 +1,9 @@
-package com.zkdcloud.shadowsocks.client.menu;
+package com.zkdcloud.shadowsocks.client.socks5.menu;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.LoggerContext;
 import ch.qos.logback.classic.encoder.PatternLayoutEncoder;
+import ch.qos.logback.classic.spi.ILoggingEvent;
 import ch.qos.logback.core.ConsoleAppender;
 import com.zkdcloud.shadowsocks.client.socks5.config.ClientConfig;
 import com.zkdcloud.shadowsocks.common.cipher.CipherProvider;
@@ -17,22 +18,22 @@ import java.io.PrintWriter;
 /**
  * @author yuhao
  * @version 5.11.0
- * @date 2021年05月22日 01:08:00
+ * @since 2021年05月22日 01:08:00
  */
 public class ClientHelper {
 
     private static final Logger logger = LoggerFactory.getLogger(ClientHelper.class);
 
-    private CommandLine commandLine;
+    private static final Options OPTIONS = new Options();
 
-    private Options OPTIONS = new Options();
+    private static CommandLine commandLine;
 
-    public void useHelp(String[] args) {
+    public static void useHelp(String[] args) {
         parseArgs(args);
         printHelpMessage();
     }
 
-    private void parseArgs(String[] args) {
+    private static void parseArgs(String[] args) {
         // remote ip
         OPTIONS.addOption(Option.builder("s").longOpt("server_address").argName("ip:port").hasArg(true).type(String.class).desc("server connect address. e.g: ip:port").build());
         // remote password
@@ -62,7 +63,7 @@ public class ClientHelper {
         }
     }
 
-    private void printHelpMessage() {
+    private static void printHelpMessage() {
         if (commandLine.hasOption("h")) {
             logger.info("\n" + getShortHelpString());
             System.exit(1);
@@ -92,11 +93,11 @@ public class ClientHelper {
         // local address
         ClientConfig.clientConfig.setLocal(StringUtil.isNullOrEmpty(commandLine.getOptionValue("c")) ? "0.0.0.0:1080" : commandLine.getOptionValue("c"));
         // boss thread number
-        ClientConfig.clientConfig.setBossThreadNumber(StringUtil.isNullOrEmpty(commandLine.getOptionValue("bn")) ? Runtime.getRuntime().availableProcessors() * 2 : Integer.valueOf(commandLine.getOptionValue("bn")));
+        ClientConfig.clientConfig.setBossThreadNumber(StringUtil.isNullOrEmpty(commandLine.getOptionValue("bn")) ? Runtime.getRuntime().availableProcessors() * 2 : Integer.parseInt(commandLine.getOptionValue("bn")));
         // works thread number
-        ClientConfig.clientConfig.setWorkersThreadNumber(StringUtil.isNullOrEmpty(commandLine.getOptionValue("wn")) ? Runtime.getRuntime().availableProcessors() * 2 : Integer.valueOf(commandLine.getOptionValue("wn")));
+        ClientConfig.clientConfig.setWorkersThreadNumber(StringUtil.isNullOrEmpty(commandLine.getOptionValue("wn")) ? Runtime.getRuntime().availableProcessors() * 2 : Integer.parseInt(commandLine.getOptionValue("wn")));
         // idle time
-        ClientConfig.clientConfig.setIdleTime(StringUtil.isNullOrEmpty(commandLine.getOptionValue("i")) ? 600 : Integer.valueOf(commandLine.getOptionValue("i")));
+        ClientConfig.clientConfig.setIdleTime(StringUtil.isNullOrEmpty(commandLine.getOptionValue("i")) ? 600 : Integer.parseInt(commandLine.getOptionValue("i")));
         // log level
         String levelName = commandLine.getOptionValue("level");
         if (StringUtil.isNullOrEmpty(levelName)) {
@@ -111,7 +112,7 @@ public class ClientHelper {
                 ple.setPattern("%date %level [%thread] %logger{10} [%file:%line] %msg%n");
                 ple.setContext(loggerContext);
                 ple.start();
-                ConsoleAppender consoleAppender = new ConsoleAppender();
+                ConsoleAppender<ILoggingEvent> consoleAppender = new ConsoleAppender<>();
                 consoleAppender.setEncoder(ple);
                 consoleAppender.setName("STDOUT");
                 consoleAppender.setContext(loggerContext);
@@ -127,7 +128,7 @@ public class ClientHelper {
      *
      * @return help string
      */
-    private String getShortHelpString() {
+    private static String getShortHelpString() {
         HelpFormatter helpFormatter = new HelpFormatter();
         helpFormatter.setOptionComparator(null);
 
@@ -145,7 +146,7 @@ public class ClientHelper {
         helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks-socks.jar -h", null,
                 shortOptions, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
-        String result = new String(byteArrayOutputStream.toByteArray());
+        String result = byteArrayOutputStream.toString();
         printWriter.close();
         return result;
     }
@@ -155,7 +156,7 @@ public class ClientHelper {
      *
      * @return help string
      */
-    private String getFullHelpString() {
+    private static String getFullHelpString() {
         HelpFormatter helpFormatter = new HelpFormatter();
         helpFormatter.setOptionComparator(null);
 
@@ -164,7 +165,7 @@ public class ClientHelper {
         helpFormatter.printHelp(printWriter, HelpFormatter.DEFAULT_WIDTH * 2, "java -jar shadowsocks-socks.jar -help", null,
                 OPTIONS, HelpFormatter.DEFAULT_LEFT_PAD, HelpFormatter.DEFAULT_DESC_PAD, null);
         printWriter.flush();
-        String result = new String(byteArrayOutputStream.toByteArray());
+        String result = byteArrayOutputStream.toString();
         printWriter.close();
         return result;
     }

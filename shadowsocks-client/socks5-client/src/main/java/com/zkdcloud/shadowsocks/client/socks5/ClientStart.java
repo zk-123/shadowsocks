@@ -1,6 +1,6 @@
 package com.zkdcloud.shadowsocks.client.socks5;
 
-import com.zkdcloud.shadowsocks.client.menu.ClientHelper;
+import com.zkdcloud.shadowsocks.client.socks5.menu.ClientHelper;
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.client.socks5.channelHandler.inbound.Socks5ServerDoorHandler;
 import com.zkdcloud.shadowsocks.client.socks5.config.ClientConfig;
@@ -23,22 +23,22 @@ import java.util.concurrent.TimeUnit;
  */
 public class ClientStart {
 
-    private static Logger logger = LoggerFactory.getLogger(ClientStart.class);
+    private static final Logger logger = LoggerFactory.getLogger(ClientStart.class);
     /**
      * boosLoopGroup
      */
-    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ClientConfig.clientConfig.getBossThreadNumber());
+    private static final EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ClientConfig.clientConfig.getBossThreadNumber());
     /**
      * worksLoopGroup
      */
-    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ClientConfig.clientConfig.getBossThreadNumber());
+    private static final EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ClientConfig.clientConfig.getBossThreadNumber());
     /**
      * clientBootstrap
      */
-    private static ServerBootstrap clientBootstrap = new ServerBootstrap();
+    private static final ServerBootstrap clientBootstrap = new ServerBootstrap();
 
     public static void main(String[] args) throws InterruptedException {
-        new ClientHelper().useHelp(args);
+        ClientHelper.useHelp(args);
         startupClient();
     }
 
@@ -59,7 +59,7 @@ public class ClientStart {
         ChannelFuture channelFuture = clientBootstrap.bind(localAddress).sync();
 
         //start log
-        logger.info("shadowsocks socks5 client [TCP] running at {}", localAddress.toString());
+        logger.info("shadowsocks socks5 client [TCP] running at {}", localAddress);
         channelFuture.channel().closeFuture().sync();
     }
 

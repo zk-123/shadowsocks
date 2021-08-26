@@ -1,6 +1,6 @@
 package com.zkdcloud.shadowsocks.server;
 
-import com.zkdcloud.shadowsocks.menu.ServerHelper;
+import com.zkdcloud.shadowsocks.server.menu.ServerHelper;
 import com.zkdcloud.shadowsocks.server.chananelHandler.ExceptionDuplexHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.CryptInitInHandler;
 import com.zkdcloud.shadowsocks.server.chananelHandler.inbound.DecodeSSHandler;
@@ -30,23 +30,23 @@ import java.util.concurrent.TimeUnit;
  */
 public class ServerStart {
 
-    private static Logger logger = LoggerFactory.getLogger(ServerStart.class);
+    private static final Logger logger = LoggerFactory.getLogger(ServerStart.class);
 
     /**
      * boosLoopGroup
      */
-    private static EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getBossThreadNumber());
+    private static final EventLoopGroup bossLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getBossThreadNumber());
     /**
      * worksLoopGroup
      */
-    private static EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getWorkersThreadNumber());
+    private static final EventLoopGroup worksLoopGroup = new NioEventLoopGroup(ServerConfig.serverConfig.getWorkersThreadNumber());
     /**
      * serverBootstrap
      */
-    private static ServerBootstrap serverBootstrap = new ServerBootstrap();
+    private static final ServerBootstrap serverBootstrap = new ServerBootstrap();
 
     public static void main(String[] args) throws InterruptedException {
-        new ServerHelper().useHelp(args);
+        ServerHelper.useHelp(args);
         startupServer();
     }
 
@@ -66,7 +66,7 @@ public class ServerStart {
                 });
         InetSocketAddress bindAddress = getAddress(ServerConfig.serverConfig.getLocalAddress());
         ChannelFuture channelFuture = serverBootstrap.bind(bindAddress).sync();
-        logger.info("shadowsocks server [tcp] running at {}", bindAddress.toString());
+        logger.info("shadowsocks server [tcp] running at {}", bindAddress);
         channelFuture.channel().closeFuture().sync();
     }
 
